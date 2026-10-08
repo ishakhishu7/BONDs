@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<style>[hidden]{display:none!important}img{max-width:100%}</style>
+<title>Bond Platform Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: enterprise app shell — left nav, working canvas, right drawer for BRD queries. Pins tie each screen element to its query-log item. */
+:root{
+  --bg:#f3f5f4; --surface:#ffffff; --surface2:#e9eeec; --line:#d3dbd8; --fg:#17211f; --muted:#5b6965;
+  --accent:#0f6b5c; --accent-fg:#ffffff; --accent-soft:#dcefe9;
+  --blocker:#b42318; --blocker-bg:#fde7e4; --flag:#a15c00; --flag-bg:#fdf0d5; --query:#1d5fa8; --query-bg:#e2edfa;
+  --sugg:#2f7a3b; --sugg-bg:#e3f2e5; --minor:#5f6b68; --minor-bg:#eceeee; --ok:#2f7a3b; --warn:#a15c00; --bad:#b42318;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-head:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111816; --surface:#18211f; --surface2:#202b28; --line:#2f3d39; --fg:#e4ece9; --muted:#97a6a1;
+  --accent:#4cc2a8; --accent-fg:#06221c; --accent-soft:#183a33;
+  --blocker:#ff8a7a; --blocker-bg:#3a1d19; --flag:#f2b555; --flag-bg:#3a2b12; --query:#7fb3f0; --query-bg:#172b44;
+  --sugg:#7fd08a; --sugg-bg:#17321c; --minor:#a9b3b0; --minor-bg:#262e2c; --ok:#7fd08a; --warn:#f2b555; --bad:#ff8a7a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111816; --surface:#18211f; --surface2:#202b28; --line:#2f3d39; --fg:#e4ece9; --muted:#97a6a1;
+  --accent:#4cc2a8; --accent-fg:#06221c; --accent-soft:#183a33;
+  --blocker:#ff8a7a; --blocker-bg:#3a1d19; --flag:#f2b555; --flag-bg:#3a2b12; --query:#7fb3f0; --query-bg:#172b44;
+  --sugg:#7fd08a; --sugg-bg:#17321c; --minor:#a9b3b0; --minor-bg:#262e2c; --ok:#7fd08a; --warn:#f2b555; --bad:#ff8a7a; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{overflow-x:clip}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{font-family:var(--f-head);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:22px;font-weight:700}
+h2{font-size:17px;font-weight:600}
+h3{font-size:14px;font-weight:600}
+.mono,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.app{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+.top{grid-column:1/-1;position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand b{font-family:var(--f-head);font-size:17px;letter-spacing:.2px}
+.tag{font-size:11px;letter-spacing:.6px;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.top .sp{flex:1}
+.toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;font-size:13px}
+.toggle input{width:34px;height:18px;appearance:none;background:var(--line);border-radius:10px;position:relative;cursor:pointer;transition:background .15s}
+.toggle input::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--surface);transition:transform .15s}
+.toggle input:checked{background:var(--accent)}
+.toggle input:checked::after{transform:translateX(16px)}
+.toggle input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+nav.side{border-right:1px solid var(--line);background:var(--surface);padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+nav.side .grp{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);padding:12px 10px 4px}
+nav.side button{all:unset;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;font-size:13.5px}
+nav.side button:hover{background:var(--surface2)}
+nav.side button:focus-visible{outline:2px solid var(--accent)}
+nav.side button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+nav.side .cnt{font-family:var(--f-mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.app>*{min-width:0}
+main{padding-block:22px 60px;padding-inline:24px;min-width:0;display:flex;flex-direction:column;gap:18px}
+.banner{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--muted);background:var(--surface2);border:1px dashed var(--line);border-radius:6px;padding:7px 12px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.head p{margin:4px 0 0;color:var(--muted);max-width:70ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:0}
+.panel>h2,.panel>h3{margin-bottom:10px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;display:flex;flex-direction:column;gap:2px;cursor:default}
+.tile .v{font-family:var(--f-mono);font-size:24px;font-weight:500}
+.tile .l{font-size:12px;color:var(--muted);display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+button.tile{cursor:pointer;text-align:left}
+button.tile:hover{border-color:var(--accent)}
+.stripe-b{box-shadow:inset 3px 0 0 var(--blocker)}.stripe-f{box-shadow:inset 3px 0 0 var(--flag)}.stripe-q{box-shadow:inset 3px 0 0 var(--query)}.stripe-s{box-shadow:inset 3px 0 0 var(--sugg)}.stripe-m{box-shadow:inset 3px 0 0 var(--minor)}
+/* pins */
+.pin{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:3px;font-family:var(--f-mono);font-size:11px;font-weight:500;line-height:1;padding:3px 6px;border-radius:10px;vertical-align:middle;white-space:nowrap;margin-left:4px}
+.pin::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.pin:focus-visible{outline:2px solid var(--accent)}
+.pin.c-blocker{background:var(--blocker-bg);color:var(--blocker)}
+.pin.c-redflag{background:var(--flag-bg);color:var(--flag)}
+.pin.c-query{background:var(--query-bg);color:var(--query)}
+.pin.c-suggestion{background:var(--sugg-bg);color:var(--sugg)}
+.pin.c-minor{background:var(--minor-bg);color:var(--minor)}
+.pin.st-agreed{text-decoration:line-through;opacity:.7}
+body.no-pins .pin,body.no-pins .gap-note{display:none!important}
+.pill{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:10px;white-space:nowrap}
+.pill.blocker{background:var(--blocker-bg);color:var(--blocker)}.pill.redflag{background:var(--flag-bg);color:var(--flag)}.pill.query{background:var(--query-bg);color:var(--query)}.pill.suggestion{background:var(--sugg-bg);color:var(--sugg)}.pill.minor{background:var(--minor-bg);color:var(--minor)}
+.pill.ok{background:var(--sugg-bg);color:var(--ok)}.pill.warn{background:var(--flag-bg);color:var(--warn)}.pill.bad{background:var(--blocker-bg);color:var(--bad)}.pill.neutral{background:var(--surface2);color:var(--muted)}
+.gap-note{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;padding:8px 10px;border-radius:6px;background:var(--flag-bg);color:var(--fg);border:1px solid color-mix(in srgb,var(--flag) 35%,transparent)}
+.gap-note b{color:var(--flag)}
+/* forms */
+.form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 18px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font-size:12px;color:var(--muted);font-weight:500;display:flex;align-items:center;flex-wrap:wrap;gap:2px}
+.field .src{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-left:auto}
+input[type=text],input[type=number],input[type=date],select,textarea{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:7px 9px;min-width:0}
+input[readonly]{background:var(--surface2);color:var(--muted)}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:0;border-color:var(--accent)}
+.btn{cursor:pointer;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 12px;font-weight:500;font-size:13px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;flex-wrap:wrap}
+.seg button{all:unset;cursor:pointer;padding:6px 12px;font-size:13px;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button.on{background:var(--accent);color:var(--accent-fg)}
+.seg button:focus-visible{outline:2px solid var(--accent)}
+/* tables */
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface2)}
+td.r,th.r{text-align:right}
+.bar{height:8px;border-radius:4px;background:var(--surface2);overflow:hidden;display:flex;min-width:80px}
+.bar i{display:block;height:100%}
+/* stepper */
+.stepper{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+.step{all:unset;cursor:pointer;border:1px solid var(--line);border-radius:8px;padding:10px;background:var(--surface);display:flex;flex-direction:column;gap:3px;min-width:0}
+.step:focus-visible{outline:2px solid var(--accent)}
+.step .n{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+.step .t{font-weight:600;font-size:13px;line-height:1.25}
+.step .o{font-size:11.5px;color:var(--muted)}
+.step.done{border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.step.done .n::after{content:" ✓";color:var(--accent)}
+.step.cur{background:var(--accent-soft);border-color:var(--accent)}
+.step.sel{outline:2px solid var(--fg);outline-offset:1px}
+.kv{display:grid;grid-template-columns:minmax(140px,220px) minmax(0,1fr);gap:0;border-top:1px solid var(--line)}
+.kv>div{padding:7px 4px;border-bottom:1px solid var(--line);min-width:0}
+.kv>div:nth-child(odd){color:var(--muted);font-size:12.5px}
+.ledger td{font-size:12.5px}
+.chip{font-size:11px;padding:1px 7px;border-radius:4px;background:var(--surface2);color:var(--muted);white-space:nowrap}
+/* checklist */
+.ck{display:grid;grid-template-columns:minmax(0,1fr) 110px minmax(0,1fr);gap:0;border-top:1px solid var(--line)}
+.ck>div{padding:7px 6px;border-bottom:1px solid var(--line);font-size:13px;min-width:0}
+.ck .h{font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:600}
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.25);z-index:40}
+aside.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:50;
+  display:flex;flex-direction:column;box-shadow:-12px 0 30px rgba(0,0,0,.12);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer .dh{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.drawer .db{padding:14px 18px 24px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.drawer .sec{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:600;margin-bottom:3px}
+.drawer .ex{background:var(--surface2);border-radius:6px;padding:10px 12px;border-left:3px solid var(--accent)}
+.drawer p{margin:0}
+.x{all:unset;cursor:pointer;font-size:20px;line-height:1;padding:2px 6px;border-radius:4px}
+.x:focus-visible{outline:2px solid var(--accent)}
+.flt{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.fbtn{all:unset;cursor:pointer;font-size:12.5px;padding:4px 10px;border-radius:14px;border:1px solid var(--line)}
+.fbtn.on{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.fbtn:focus-visible{outline:2px solid var(--accent)}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px}
+.flow .arrow{color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:13px;z-index:60}
+@media (max-width:900px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  nav.side{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px 12px;position:sticky;top:0}
+  nav.side .grp{display:none}
+  nav.side button{white-space:nowrap}
+  main{padding-inline:16px}
+  .grid2,.grid3{grid-template-columns:minmax(0,1fr)}
+  .stepper{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:560px){
+  .form{grid-template-columns:minmax(0,1fr)}
+  .stepper{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kv{grid-template-columns:minmax(0,1fr)}
+  .kv>div:nth-child(odd){border-bottom:0;padding-bottom:0}
+  .top{padding:10px 16px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><b>Bond Platform</b><span class="tag">Phase 1 prototype</span></div>
+    <span class="muted small">Built from BRD v1.1 · for BRD review discussion</span>
+    <div class="sp"></div>
+    <label class="toggle" for="pinToggle"><input type="checkbox" id="pinToggle" checked> Show review queries</label>
+  </header>
+  <nav class="side" id="nav"></nav>
+  <main id="main"></main>
+</div>
+<div id="drawerRoot"></div>
+
+<script>
+const Q = [{"n": 1, "sec": "1.1 vs 30", "cat": "Blocker", "pri": "High", "ph": "Common", "obs": "Phase order conflicts: 1.1 = Bond → TCI → Insurance; Section 30 sequences Bond → Insurance → Trade Credit.", "ex": "If we follow 1.1, after Bond we start TCI (Zata sales-invoice integration, exposure logic). If we follow 30, we start Insurance (policy OCR, asset register). Completely different teams, integrations and timelines – can't plan Sprint 5 onwards.", "imp": "Build plan and sprint sequencing cannot be finalised.", "res": "Confirm the phase order and align Section 30 (and 6/7 phase tags) to it."}, {"n": 2, "sec": "25 Non-Functional Requirements", "cat": "Blocker", "pri": "High", "ph": "Common", "obs": "25.1–25.7 (Security, Performance, Availability & Recovery, Scalability, Configurability, Auditability, Data Retention) are headings only – no content.", "ex": "Questions we can't answer today: How many users log in at month-end? How long must a closed bond's documents be kept – 8 years? 10? If the server goes down, how much data can we lose (1 hour? 1 day?). Can a BU user download all bond PDFs? Without these, hosting and security design is guesswork.", "imp": "No baseline for architecture, security design, hosting, UAT or ITGC/audit sign-off.", "res": "Provide NFRs: data classification & encryption, RBAC & periodic access review, SSO/session rules, audit-log retention, RPO/RTO, expected users/volumes, response-time targets, document size limits, data-retention periods (link to open item 29.22)."}, {"n": 3, "sec": "15.7; 12.4; Rev. log #22", "cat": "Blocker", "pri": "High", "ph": "Phase 1 – Bond", "obs": "Standard bond proposal format is to be attached as an annexure, but no annexure is attached.", "ex": "System must auto-generate the proposal at Step 2c. Without the format we don't know: is it a 2-page letter or a 6-page form? Does it include last 3 years' turnover? Signatory block? Each insurer's own format or one Zetwerk format?", "imp": "Proposal generation (Step 2c) cannot be designed or built.", "res": "Attach the standard proposal format (with field mapping to request/entity master fields) as Annexure A."}, {"n": 4, "sec": "15.4; 12.3; 15.18 #6", "cat": "Blocker", "pri": "High", "ph": "Phase 1 – Bond", "obs": "Bond-type-wise document checklist (which documents are mandatory/optional per bond type) is not provided.", "ex": "BU selects 'Performance Bond'. What should the screen show? e.g. 1) LOA/PO copy – mandatory, 2) Contract/MSA – mandatory, 3) Customer bond format – mandatory, 4) Project schedule – optional. We need this list for all 7 bond types.", "imp": "Step 1 form and checklist master cannot be configured.", "res": "Provide the checklist per bond type (Bid, Performance, Advance, Retention, Financial Guarantee, Legal, Custom) with mandatory/optional flag."}, {"n": 5, "sec": "15.3 2nd Flow – Bond Amendment; 15.18 #5", "cat": "Blocker", "pri": "High", "ph": "Phase 1 – Bond", "obs": "Amendment flow says 'applicable steps of 2 to 6 (To confirm)'; amendment form fields and which steps apply per amendment type are not defined.", "ex": "Case A: customer only wants beneficiary address corrected → no premium, no payment, only insurer endorsement. Case B: bond amount ₹5 Cr → ₹7 Cr → extra premium, new PI, payment, limit check. Same 'Amendment' flow, very different steps – which steps run for which type?", "imp": "One of the three Phase 1 flows cannot be built.", "res": "Define amendment types (amount, wording, beneficiary, dates), form fields, and steps executed per type (e.g. wording-only change may skip premium/payment)."}, {"n": 6, "sec": "15.18 #1; 9; 11.6", "cat": "Blocker", "pri": "High", "ph": "Common", "obs": "All persona POCs are 'To be assigned', including BU Finance POC per BU and maker/reviewer/approver POCs.", "ex": "Request raised by Railways BU on Monday. System needs to know: who is Railways BU Finance POC? Who in Bond Team picks it up? Who approves at Step 3? If that person is on leave, who's the backup? Today all show 'To be assigned'.", "imp": "Workflow routing, notifications and UAT users cannot be configured.", "res": "Provide the named POC list per persona, per BU and per workflow role, with a backup/delegate for each."}, {"n": 7, "sec": "15.18 #10; 11.19; 11.20", "cat": "Blocker", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "SLA per step and reminder/escalation matrix not provided.", "ex": "Step 2 verification – how many days before it's 'delayed'? 2 days? 5? When delayed, who gets the escalation email – Bond Team lead? Without numbers, the ageing dashboard can't show red/amber/green.", "imp": "Escalation engine and Dashboard 5 (ageing) have no thresholds.", "res": "Provide SLA (days) per Step 1–6, reminder frequency and escalation level/person."}, {"n": 8, "sec": "Document Control; 1.1; 4.2; 4.3; 7(C/D)", "cat": "Red Flag", "pri": "High", "ph": "Common", "obs": "Title says 'Overall – Bond, Insurance and Trade Credit', but Document Control, 1.1, 4.2, 4.3 and 7 still state the BRD covers Phase 1 only and that TCI/Insurance will be detailed in a later version. 'Scope covered: Original Pages 1–27 (Sections 1–15)' is outdated.", "ex": "Page 1 title says 'Overall – Bond, Insurance and Trade Credit', but Section 1.1 table says TCI = 'Deferred – to be detailed in a later version'. A developer reading 18.9 (invoice eligibility) can't tell if it is approved to design now or just a placeholder.", "imp": "Unclear which sections are approved for design; risk of TCI/Insurance being treated as non-binding.", "res": "Release as v1.2 (overall BRD). Restate scope as all three modules with phase tagging; update 'Scope covered' to Sections 1–30; remove 'later BRD version' references or confirm a separate Phase 2/3 BRD will follow."}, {"n": 9, "sec": "Part B (Sections 16–30) – intro note", "cat": "Red Flag", "pri": "High", "ph": "Common", "obs": "Part B is reproduced as-is from the earlier vendor draft (SPR Consultech). It has not gone through the business review that Pages 10–27 went through, and several Phase 1 changes are not reflected in it (see items below).", "ex": "Part A (Rev. #26) says Bond insurer emails go outside the platform. Part B 20.2 still says 'Sent communication shall be stored… pre-populated templates… users edit before sending'. Same BRD, two opposite instructions for the same feature.", "imp": "Contradictory requirements between Part A and Part B; development cannot rely on Part B as approved.", "res": "Business to review Sections 16–30 in the same manner as Part A and confirm Part B is approved for design. Remove vendor-specific wording now that the build is internal."}, {"n": 10, "sec": "15.2 Limit Movement Rules", "cat": "Red Flag", "pri": "High", "ph": "Phase 1 – Bond", "obs": "Limit rules cover issuance, return, expiry and invocation only. Impact of Amendment (amount increase/decrease) and Extension on utilised/available limit is not defined.", "ex": "Insurer A Performance limit ₹50 Cr, utilised ₹40 Cr, available ₹10 Cr. Bond X amended from ₹5 Cr to ₹8 Cr. Should utilised become ₹43 Cr? When – on approval or on amended-bond upload? If reduced to ₹3 Cr, does ₹2 Cr come back immediately? BRD is silent.", "imp": "Limit Master can show wrong available limit after amendments/extensions.", "res": "Add rules, e.g.: amount increase → incremental utilisation on amended bond upload + over-limit flag; amount decrease → partial restoration on insurer confirmation; extension → utilisation continues, expiry/claim-expiry dates updated, no re-posting."}, {"n": 11, "sec": "13 Insurer Master; 14 Broker Master", "cat": "Red Flag", "pri": "High", "ph": "Common", "obs": "Insurer Master is Bond-oriented (bond types supported, sanctioned limits). It lacks policy categories and TCI products, which Broker Master already has.", "ex": "Insurer A gives us bonds (Phase 1) AND a TCI policy (Phase 2). Today's Insurer Master only has 'bond types supported'. In Phase 2 we'd have to add 'TCI products', 'policy categories' and migrate again – cheaper to add the fields now.", "imp": "Shared master will need rework when Phase 2/3 start.", "res": "Add policy categories / TCI products and module applicability to Insurer Master now; keep limits in module-specific masters."}, {"n": 12, "sec": "29.1; 11.5 Role & Access", "cat": "Red Flag", "pri": "High", "ph": "Common", "obs": "No role/access matrix. Not defined whether a BU user sees only own requests, all requests of their BU, or entity-wide; who can edit Limit Master; what Auditor/Management can see.", "ex": "A Railways BU user opens 'My Requests' – should they also see Defence BU bonds? Can a Bond Team member change the sanctioned limit in Limit Master? Auditor wants read-only access to everything – including premium figures?", "imp": "Data segregation and security cannot be built; ITGC risk.", "res": "Provide role-access matrix (role x module x action x data scope: own/BU/entity/all)."}, {"n": 13, "sec": "15.2 Rule 3", "cat": "Red Flag", "pri": "High", "ph": "Phase 1 – Bond", "obs": "Limit restoration on expiry is 'based on applicable expiry / claim-expiry rule' – not stated whether it happens at bond-expiry or claim-expiry date, or needs manual confirmation.", "ex": "Bond expiry 31-Mar-2027, claim-expiry 30-Jun-2027 (3 months claim period). If limit is restored on 31-Mar, we reuse ₹5 Cr for a new bond – but customer can still invoke the old bond till 30-Jun. Restore on 31-Mar or 30-Jun?", "imp": "Available limit may be overstated if released before the claim period ends.", "res": "Confirm: restore on claim-expiry date (if no invocation), automatically or after Bond Team confirmation."}, {"n": 14, "sec": "15.2; 15.16; 13 – International bonds", "cat": "Red Flag", "pri": "High", "ph": "Phase 1 – Bond", "obs": "Multi-currency not addressed. International geographies/insurers imply bonds and facilities in foreign currency; no rule for limit currency, FX rate source, or conversion for utilisation and dashboards.", "ex": "UAE entity takes a AED 10 L bond from an international insurer whose facility is in USD. Utilise how much USD? At which rate – bond issue date or month-end? Dashboard 1 in INR – converted at today's rate or historical? None of this is in the BRD.", "imp": "Limit utilisation and premium validation wrong for non-INR bonds.", "res": "Define facility currency, bond currency, FX rate source/date for utilisation, and reporting currency."}, {"n": 15, "sec": "15.17 Dashboard 17", "cat": "Red Flag", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "'Final bond pending upload once the limit is utilised' is circular – per Rule 1 the limit is utilised only when the final bond is uploaded.", "ex": "Dashboard says 'show final bond pending once limit is utilised'. But limit is utilised only when the final bond is uploaded – so the moment it qualifies, it's already uploaded. Dashboard will always be empty. Better: payment done on 10-Oct, final bond not uploaded by 20-Oct → show as pending.", "imp": "Dashboard condition cannot be implemented as written.", "res": "Suggest trigger = payment confirmed (Step 4d) and final bond not yet uploaded."}, {"n": 16, "sec": "10.4 vs 22 Integration", "cat": "Red Flag", "pri": "Medium", "ph": "Common", "obs": "Section 22 does not match 10.4: sales orders/invoices/AR/contract/PO show 'API/report' with no Zata source; Payment/UTR shows 'API or Finance update' vs OMS in 10.4; LC source differs.", "ex": "10.4 says Payment/UTR source = OMS. Section 22 says 'API or Finance update' and lists ERP for payments. Developer building the payment-status integration doesn't know whether to connect to OMS or ERP.", "imp": "Integration design based on wrong source systems.", "res": "Align Section 22 with 10.4 (Zata, OMS) and add a source-system column."}, {"n": 17, "sec": "11.11; 11.12; 20.2 External Communication", "cat": "Red Flag", "pri": "Medium", "ph": "Common", "obs": "11.12 and 20.2 require external emails to be drafted from templates, approved and sent from the platform; for Bond, communication happens outside the platform (Rev. #26).", "ex": "11.12 says external emails must stay in draft until approved. For Bond, the Bond Team sends emails from Outlook, not the platform. Do we still build email templates + approval for Bond, or only a 'log communication + attach email' screen?", "imp": "Unclear whether email templates/approval must be built for Bond.", "res": "State applicability per module (Bond: record only; TCI/Insurance: send from platform?)."}, {"n": 18, "sec": "20.4 Bond notifications", "cat": "Red Flag", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "'Insurer response overdue' has no data to trigger it, since insurer/broker communication date was removed from Bond Team fields (Rev. #19).", "ex": "Notification: 'Insurer response overdue'. To know it's overdue we need 'sent to insurer on 5-Oct' + SLA 3 days → alert on 8-Oct. But the 'insurer/broker communication date' field was removed in review – so the system has no date to count from.", "imp": "Notification cannot be implemented.", "res": "Either retain a 'sent to insurer date' at Step 2d or drop this notification."}, {"n": 19, "sec": "15.2 Rule 6; 15.18 #12", "cat": "Query", "pri": "High", "ph": "Phase 1 – Bond", "obs": "Whether pre-issuance (pipeline) requests reserve limit is still open.", "ex": "Available ₹10 Cr. Request 1 (₹8 Cr) is approved at Step 3 but bond not yet issued. Request 2 (₹6 Cr) comes in. If no reservation, system shows ₹10 Cr available and says Request 2 is fine – but once both issue, ₹14 Cr > ₹10 Cr.", "imp": "Drives available-limit calculation, eligibility check in Step 2b and Dashboard 15.", "res": "Confirm Yes/No; if Yes, confirm the step at which reservation happens (e.g. Step 3 approval) and when it is released."}, {"n": 20, "sec": "15.8; 15.9 Step 6; 10.4 ERP", "cat": "Query", "pri": "High", "ph": "Phase 1 – Bond", "obs": "No requirement on how bond premium is accounted in ERP: vendor invoice booking from the tax invoice, GST input credit, and prepaid premium amortisation over bond tenure.", "ex": "3-year bond, premium ₹3,00,000 + 18% GST ₹54,000, paid upfront. In D365 this should be booked as AP invoice → ₹3 L to Prepaid Expense, amortised ₹8,333/month for 36 months; ₹54,000 GST input credit. Is Finance doing this manually from the tax invoice, or should the platform send the data to ERP?", "imp": "Finance may run a parallel manual process; platform and ERP premium figures may not reconcile.", "res": "Confirm whether the platform must push tax invoice / premium data to ERP (AP booking + prepaid schedule) or ERP stays manual; if integrated, define fields and trigger point."}, {"n": 21, "sec": "12.2 Customer vs Beneficiary", "cat": "Query", "pri": "High", "ph": "Common", "obs": "Bond uses Beneficiary (with public/private classification); TCI uses Customer with classification. Not clear if these are one master or two.", "ex": "Customer 'XYZ Metro Rail Corp' – in Bond it's the beneficiary of a Performance bond (public); in TCI it's a customer with a credit limit. One record used by both modules, or two records? If two, they'll drift (different names, addresses).", "imp": "Master data design decision needed before Phase 1 build.", "res": "Confirm whether Beneficiary is a role on Customer Master or a separate master, and the mapping rules."}, {"n": 22, "sec": "15.8; 15.9 Step 4c", "cat": "Query", "pri": "High", "ph": "Phase 1 – Bond", "obs": "Premium validation: no variance tolerance, and no action defined when PI differs from system premium (block payment? approval? back to insurer?). Calculation basis (pro-rata days/months, minimum premium, rounding) not given.", "ex": "System calculates ₹1,00,000 premium; insurer PI says ₹1,00,250 (rounding/stamp duty difference). Flag it? Allow? Tolerance ₹500 or 1%? And calculation: ₹5 Cr bond × 0.8% p.a. × 400 days – pro-rata 400/365, or rounded up to 2 years, or insurer minimum premium?", "imp": "Premium validation logic cannot be built or tested.", "res": "Provide tolerance (amount/%), action on variance, and calculation basis with one worked example per insurer."}, {"n": 23, "sec": "15.2 Bond Limit Override Control; 15.18 #4, #14", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "'Insurer flow' for over-limit issuance is not defined, and approval authority for insurer-supported over-limit issuance is open.", "ex": "Available limit ₹10 Cr, BU needs a ₹12 Cr bond, Insurer A agrees by email to issue. System flags ₹2 Cr over-limit. Who approves – the same Step 3 approver, or CFO? What exactly is the 'Insurer flow' – do we record the insurer's email as evidence, and follow up for formal enhancement?", "imp": "Override capture screen and approval routing cannot be finalised.", "res": "Define the insurer flow steps and the approver for over-limit cases (same Step 3 approver or higher authority?)."}, {"n": 24, "sec": "15.5 Step 5; 15.6; 15.17 Dashboard 17", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "Step 5 auto-populates from the 'final bond / policy copy', while Dashboard 17 treats policy copy as optional. Unclear if final bond and policy copy are the same document.", "ex": "Some insurers issue the bond (guarantee given to customer) AND a separate policy schedule/copy to Zetwerk. If the bond is uploaded but the policy copy is not, is the request complete? Which document do we read bond number and expiry date from?", "imp": "Upload slots, extraction template and pending-document logic depend on this.", "res": "Confirm whether these are separate documents; if separate, confirm which one drives Step 5 auto-population."}, {"n": 25, "sec": "15.9 Steps 2d–3", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "Proposal is sent to insurer/broker (2d) and quote obtained (2e) before internal approval (Step 3). Requests go to market without any internal approval.", "ex": "Today's flow: BU raises request → Bond Team sends proposal to 3 insurers → gets quotes → THEN approver sees it. If the approver rejects (e.g. project not worth bonding), we've already approached 3 insurers for nothing. Is that acceptable, or should there be an approval before going to market?", "imp": "Possible control gap if business expects approval before approaching insurers.", "res": "Confirm this sequence is intended. If a pre-market check is needed, add an approval/limit-check gate before 2d."}, {"n": 26, "sec": "11.7; 15.18 #2", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "Return-to-maker on rejection is 'To confirm'. Also unclear whether a Step 3 rejection returns to the BU (Step 1) or Bond Team (Step 2), and whether the insurer quote is re-obtained.", "ex": "Approver rejects at Step 3 saying 'premium rate too high'. Does it go back to the BU (Step 1) – who can't fix the rate – or to the Bond Team (Step 2) to renegotiate? And if the reason is 'project cancelled', should it be closed instead of returned?", "imp": "Workflow routing cannot be configured.", "res": "Confirm return target per rejection stage and whether rejection can also be final (close request)."}, {"n": 27, "sec": "15.12 Bond Extension", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "No action defined if the BU does not respond after the 2–3 extension reminders.", "ex": "Bond expires 31-Dec. Reminders to BU on 1-Nov, 15-Nov, 1-Dec – no reply. On 31-Dec the bond lapses and customer may invoke or penalise. Who gets escalated after the 3rd reminder – BU Finance POC? BU Head? Bond Team decides by default?", "imp": "Bond may expire without decision.", "res": "Define escalation (e.g. to BU Finance POC / BU head) and default outcome."}, {"n": 28, "sec": "23 Data Migration", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "Sanctioned amount is now bifurcated by bond type (15.2); existing trackers may hold a single facility amount.", "ex": "Current tracker: 'Insurer A – facility ₹100 Cr'. New system needs: Bid ₹20 Cr, Performance ₹50 Cr, Advance ₹30 Cr. If the sanction letter doesn't split it, who decides the split before go-live?", "imp": "Facility master cannot be migrated as-is.", "res": "Confirm bond-type-wise split is available for existing facilities, or who will provide it before migration."}, {"n": 29, "sec": "16.6; 16.12 Insurance payments", "cat": "Query", "pri": "Medium", "ph": "Phase 3 – Insurance", "obs": "Insurance renewal (step 8) and premium tracking imply payment processing in the platform, whereas Bond payments are processed in OMS.", "ex": "Bond premium payment → processed in OMS, platform only records UTR. Insurance renewal premium → BRD step 8 says 'premium processed' in the workflow. Will insurance payments also go through OMS, or is a payment step expected inside the platform?", "imp": "Inconsistent payment process across modules.", "res": "Confirm whether OMS is the payment route for all modules."}, {"n": 30, "sec": "15.11; 15.5 Step 6; 15.18 #9", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "Value lists not defined: 'commitment stage' for withdrawal, Bond disposition, Verification status, Clarifications required, Draft bond status.", "ex": "'Bond disposition' dropdown – what values? e.g. Active / Returned / Expired / Invoked? And 'Withdrawal allowed up to commitment stage' – is that until Step 3 approval, or until insurer quote, or until payment?", "imp": "Dropdowns and withdrawal rule cannot be configured.", "res": "Provide value lists. Suggest withdrawal allowed up to Step 3 approval; after payment only via cancellation (15.14)."}, {"n": 31, "sec": "15.9 Step 4b", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "If the BU does not accept the draft wording, the loop (back to insurer, revised draft, re-confirmation) is not defined.", "ex": "Draft bond received; BU says 'claim period should be 6 months not 12'. Request goes back to insurer, revised draft comes 4 days later, BU confirms. BRD has only 'Confirmed by BU' – no 'Changes requested' path or draft versions (v1, v2).", "imp": "Workflow gap at draft confirmation.", "res": "Define reject/revise path for draft wording and keep draft versions."}, {"n": 32, "sec": "15.5 Step 2", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "'Selected insurer' is manual while 'Eligible insurers' is automated. Can the Bond Team select an insurer not in the eligible list (no facility / over limit)?", "ex": "System lists eligible insurers: A and B (have Performance limit for this entity). Bond Team wants Insurer C (better rate, no facility yet). Can they select C? If yes, it should trigger the over-limit/insurer flow with mandatory reason.", "imp": "Control over limit eligibility unclear.", "res": "Confirm: allow only eligible insurers, or allow others with mandatory reason + over-limit flow."}, {"n": 33, "sec": "10.4 Payment/UTR; 15.5 Step 4", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "'Payment status updated from OMS / Finance' – unclear whether this is an OMS integration or manual entry by Finance.", "ex": "Finance pays the premium in OMS on 12-Oct. Does the platform pick up status + UTR automatically (needs the platform request number in the OMS payment), or does Finance log in and type the UTR manually?", "imp": "Integration scope and Finance user effort undefined.", "res": "Confirm mode; if integrated, define the matching key (request/proposal no. on the OMS payment)."}, {"n": 34, "sec": "15.18 #13; 15.15 Invocation", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "Invocation workflow steps, approvers and document checklist are not defined.", "ex": "Customer invokes a ₹2 Cr performance bond. Who is informed first – Bond Team, Legal, BU? Is there an approval to contest? Which documents (invocation notice, legal opinion, settlement letter)? Without this we can only build a 'record invocation' form.", "imp": "Invocation can only be built as a record, not a workflow.", "res": "Provide steps/owners, or confirm Phase 1 delivers invocation as a record-only screen."}, {"n": 35, "sec": "23 Data Migration – cut-over", "cat": "Query", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "No cut-over rule for requests in progress at go-live (which step they enter, documents to carry), and no date to stop Google Forms / Freshdesk / trackers.", "ex": "Go-live 1-Feb. On 31-Jan, 25 requests are mid-way (some quoted, some paid but bond not issued). Do we migrate them at their current step with documents, or finish them in the old tracker? And from which date are Google Forms / Freshdesk closed for new bond requests?", "imp": "Parallel running and duplicate records after go-live.", "res": "Define cut-over date, treatment of in-flight requests, and legacy-tool freeze date."}, {"n": 36, "sec": "15.10 Project Status", "cat": "Query", "pri": "Low", "ph": "Phase 1 – Bond", "obs": "'Partially completed (% of completion)' – who updates it and how often? Should 'Rejected'/'Cancelled'/'Dropped' project status auto-set bond requirement to 'No longer required'?", "ex": "Project status changed to 'Cancelled'. Should bond requirement automatically become 'No longer required' and trigger return of the bond? Also, who updates '% completion' (40% → 60%) – BU monthly, or pulled from a project system?", "imp": "Status sync logic undefined.", "res": "Confirm owner/frequency for % completion and any automatic status linkage."}, {"n": 37, "sec": "15.13 Facility Development", "cat": "Query", "pri": "Low", "ph": "Phase 1 – Bond", "obs": "Fields listed, but no workflow steps, statuses, owner or approval for facility development/enhancement requests.", "ex": "Bond Team starts discussions with Insurer D for a new ₹50 Cr facility. Stages? e.g. Initiated → Documents shared → Underwriting queries → Sanctioned / Declined. Who owns it, and does sanction need internal approval before it's added to Limit Master?", "imp": "Dashboard 16 stages undefined.", "res": "Provide stage/status list and owner."}, {"n": 38, "sec": "15.18 vs 29", "cat": "Suggestion", "pri": "Medium", "ph": "Common", "obs": "Two overlapping open-item lists. 15.18 items 10–14 duplicate Section 29 items; Section 29 still lists Bond items already in 15.18.", "ex": "'Whether pre-issuance requests reserve limit' appears as 15.18 #12 AND 29 #5. Business answers it in 15.18 and marks it closed, but 29 #5 still shows open – next review someone raises it again.", "imp": "Items may be closed in one list and left open in the other.", "res": "Maintain one consolidated open-items register with ID, phase, owner, target date and status; remove the duplicate list."}, {"n": 39, "sec": "20.4 Bond notifications", "cat": "Suggestion", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "Notifications for items added in v1.1 are missing: clarification raised, rejection returned to maker, BU extension reminders (2–3), tax invoice pending, final bond pending, amendment requested.", "ex": "Bond Team raises a clarification on 7-Oct ('upload signed LOA'). BRD says BU is notified by email – but 20.4 list doesn't include 'Clarification raised'. Same for 'Tax invoice pending 15 days after issuance' and 'Request returned to you for revision'.", "imp": "Incomplete notification set.", "res": "Add these to 20.4 with recipient and trigger."}, {"n": 40, "sec": "21 Approvals; 15.9 Step 3", "cat": "Suggestion", "pri": "Medium", "ph": "Common", "obs": "Phase 1 uses a single approver, but Section 21 and TCI/Insurance flows need amount- and risk-based multi-criteria approvals.", "ex": "Phase 1: one approver for all bonds. Phase 2 TCI: exposure exception > ₹5 Cr needs CFO, below that Treasury Head. If we build a single-approver engine now, we rebuild it for TCI. Better to build amount/module-based from day one, configured with one approver for now.", "imp": "Approval engine may need rework later.", "res": "Confirm the approval-matrix dimensions now so the engine is built multi-criteria from Phase 1."}, {"n": 41, "sec": "15.9 Step 5; 19.5", "cat": "Suggestion", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "No check that the final bond matches the BU-confirmed draft (amount, beneficiary, dates, wording), although 19.5 lists draft vs final comparison.", "ex": "BU confirmed draft with amount ₹5,00,00,000 and expiry 31-Mar-2027. Final bond arrives with expiry 31-Mar-2026 (typo by insurer). System auto-fills dates and utilises limit without any warning – BU finds out when customer rejects the bond.", "imp": "Issued bond may differ from what the BU confirmed.", "res": "Add a draft-vs-final comparison at Step 5 with mismatch flag before limit utilisation."}, {"n": 42, "sec": "15.6 Tax invoice extraction", "cat": "Suggestion", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "Tax invoice extraction lacks recipient (Zetwerk entity) GSTIN, place of supply, SAC code and tax split.", "ex": "Tax invoice is billed to Zetwerk Karnataka GSTIN 29XXXX, but the bond is for the Maharashtra entity (27XXXX). Without extracting recipient GSTIN and place of supply, the system can't catch it – and the GST input credit gets blocked.", "imp": "GST input credit validation not possible.", "res": "Add recipient GSTIN (validate against Entity Master), place of supply, SAC and CGST/SGST/IGST split."}, {"n": 43, "sec": "11.25; 15.2 Limit Master; 28", "cat": "Suggestion", "pri": "Medium", "ph": "Phase 1 – Bond", "obs": "No maker-checker for changes to Limit Master (sanctioned amount, sub-limits, effective dates) and other key masters.", "ex": "A user edits Insurer A's Performance sanctioned limit from ₹50 Cr to ₹80 Cr. With no maker-checker, the next bond passes the limit check on a limit that was never sanctioned. Similar to vendor bank-account changes in D365 needing approval – auditors will ask for it.", "imp": "Unauthorised limit changes possible; ITGC / audit observation risk.", "res": "Require maker-checker approval and audit trail for Limit Master and key master edits."}, {"n": 44, "sec": "24.2 Bond Reports", "cat": "Suggestion", "pri": "Low", "ph": "Phase 1 – Bond", "obs": "Bond reports lack amendment register, extension register, tax-invoice register and document-pending report; premium report not insurer-wise and bond-type-wise (Rev. #36).", "ex": "Management asks 'how many bonds were extended this year and at what premium?' – Section 24.2 has no extension register. Dashboard 12 shows premium insurer-wise & bond-type-wise but the downloadable Premium report doesn't.", "imp": "Reports inconsistent with dashboards.", "res": "Add these reports and align premium report with Dashboard 12."}, {"n": 45, "sec": "26 Business Rules", "cat": "Suggestion", "pri": "Low", "ph": "Common", "obs": "Rules not updated for v1.1 changes: over-limit flagged not blocked; automatic limit restoration on return; payment approval in OMS.", "ex": "Rule list still doesn't say 'over-limit issuance is flagged, not blocked' (Rev. #8). A tester reading only Section 26 may raise a defect saying the system should block it.", "imp": "Inconsistent rule set.", "res": "Add/update the rules."}, {"n": 46, "sec": "16.14 Dashboard 21", "cat": "Suggestion", "pri": "Low", "ph": "Common", "obs": "'Business placed with each insurer across Insurance and Bonds' needs premium captured consistently in both modules.", "ex": "Management wants 'total business with Insurer A': ₹40 L bond premium + ₹1.2 Cr insurance premium. If bond premium is stored with taxes and insurance without taxes (or different fields), the total will be wrong.", "imp": "Cross-module dashboard not possible without a common premium structure.", "res": "Define a common premium record (insurer, broker, module, amount, taxes, date)."}, {"n": 47, "sec": "15.17 Dashboard 11", "cat": "Suggestion", "pri": "Low", "ph": "Phase 1 – Bond", "obs": "Rule to identify 'awarded bid bonds with potential performance-bond requirement' is not defined.", "ex": "Bid bond issued for Tender T-101; project status changes to 'Awarded'. Normally a Performance bond follows. Dashboard should show T-101 as 'Performance bond expected' until a PB request is raised – this rule needs to be stated.", "imp": "Dashboard logic unclear.", "res": "Suggest: Bid Bond with project status 'Awarded' and no linked Performance Bond request; optionally auto-create a pipeline item."}, {"n": 48, "sec": "5 Current-State Challenges", "cat": "Minor", "pri": "Low", "ph": "Common", "obs": "Text refers to 5.3 (Insurance) and 5.4 (Trade Credit) challenges, but these sections are not in the document.", "ex": "Section 5.2 ends with 'Insurance-specific (5.3) and Trade Credit-specific (5.4) challenges are deferred' – but the BRD is now the overall BRD and these sections don't exist anywhere.", "imp": "Incomplete document for an overall BRD.", "res": "Add 5.3 and 5.4 from the original draft, or remove the references."}, {"n": 49, "sec": "6 Business Objectives", "cat": "Minor", "pri": "Low", "ph": "Common", "obs": "Objective 15 (configurability) is not tagged to Phase 1, though Sections 3.6 and 10 require it from the foundation.", "ex": "Objective 15 (add new insurers/bond types without rebuilding) is tagged to later phases, but Section 15.1 already requires 'Additional bond types shall be configurable' in Phase 1.", "imp": "Editorial.", "res": "Tag Objective 15 to Phase 1."}, {"n": 50, "sec": "18.7; 16.3; 18.11", "cat": "Minor", "pri": "Low", "ph": "Phase 2 – TCI", "obs": "Orphan sentence at end of 18.7 ('Detailed Trade Credit Exposure Calculation Specification, including…'). Lowercase 'link' (16.3 item 8) and 'identify' (18.11 item 8).", "ex": "End of 18.7 has a half sentence 'Detailed Trade Credit Exposure Calculation Specification, including treatment of BG…' with no verb – looks copied from the open items list.", "imp": "Editorial.", "res": "Remove/merge the orphan sentence and fix capitalisation."}, {"n": 51, "sec": "11.3 Reference number", "cat": "Minor", "pri": "Low", "ph": "Common", "obs": "Reference number format not specified (module, entity, FY, running number) for request, proposal, amendment and extension.", "ex": "Format not defined. Suggestion: BND/ZTW01/FY27/0045 for request; amendment BND/ZTW01/FY27/0045-A1; extension -E1. Helps users and finance trace a bond across steps and in ERP narration.", "imp": "Minor design decision.", "res": "Provide numbering format, e.g. BND/<Entity>/<FY>/<Seq>; amendment/extension as suffix of parent."}];
+const CATSLUG = c => c.toLowerCase().replace(/\s+/g,'');
+const esc = s => String(s).replace(/[&<>"]/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]));
+const inr = n => Math.round(n).toLocaleString('en-IN');
+const cr = n => (Math.round(n*100)/100).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+/* ---------- per-viewer meeting status (browser only) ---------- */
+let ST = {};
+try { ST = JSON.parse(localStorage.getItem('brdReviewStatus')||'{}') || {}; } catch(e) { ST = {}; }
+function saveST(){ try { localStorage.setItem('brdReviewStatus', JSON.stringify(ST)); } catch(e){} }
+const stOf = n => (ST[n] && ST[n].s) || 'open';
+
+function pin(n){
+  const q = Q[n-1];
+  return `<button class="pin c-${CATSLUG(q.cat)} ${stOf(n)==='agreed'?'st-agreed':''}" data-q="${n}" title="${esc(q.cat+': '+q.obs)}">Q${n}</button>`;
+}
+function gap(n, text){ return `<div class="gap-note">${pin(n)}<div><b>Not defined in BRD.</b> ${text}</div></div>`; }
+
+/* Which screen shows which query (for "Show on screen" links) */
+const SCREEN_OF = {};
+function reg(screen, list){ list.forEach(n => { (SCREEN_OF[n] = SCREEN_OF[n] || []).includes(screen) || SCREEN_OF[n].push(screen); }); }
+reg('overview',[1,2,8,9,12,16,28,29,35,38,45,48,49,50]);
+reg('request',[4,5,6,21,27,36,51,30]);
+reg('workflow',[3,4,6,7,10,17,18,20,22,24,25,26,30,31,32,33,39,40,41,42,23]);
+reg('limits',[10,11,13,14,19,23,34,37,43]);
+reg('premium',[20,22,42]);
+reg('dash',[15,24,44,46,47,7]);
+
+const SCREENS = [
+  {id:'overview', name:'Scope & summary', grp:'Overview'},
+  {id:'request',  name:'New bond request', grp:'Bond workflow'},
+  {id:'workflow', name:'Request tracker', grp:'Bond workflow'},
+  {id:'limits',   name:'Limit master', grp:'Masters & rules'},
+  {id:'premium',  name:'Premium & PI check', grp:'Masters & rules'},
+  {id:'dash',     name:'Bond dashboard', grp:'Reporting'},
+  {id:'log',      name:'BRD review log', grp:'Review'}
+];
+let cur = 'overview';
+try { const h = location.hash.replace('#',''); if (SCREENS.some(s=>s.id===h)) cur = h; } catch(e){}
+
+function renderNav(){
+  let g='', html='';
+  SCREENS.forEach(s=>{
+    if (s.grp!==g){ g=s.grp; html+=`<div class="grp">${g}</div>`; }
+    const c = s.id==='log' ? Q.length : (Object.keys(SCREEN_OF).filter(n=>SCREEN_OF[n].includes(s.id)).length);
+    html+=`<button data-nav="${s.id}" class="${cur===s.id?'on':''}"><span>${s.name}</span><span class="cnt">${c} Q</span></button>`;
+  });
+  document.getElementById('nav').innerHTML = html;
+}
+function go(id){ cur=id; try{ history.replaceState(null,'','#'+id);}catch(e){} renderNav(); render(); document.getElementById('main').scrollTop=0; window.scrollTo(0,0); }
+
+const banner = `<div class="banner"><span class="pill neutral">Sample data</span>Names, amounts and insurers are illustrative. Coloured tags (Q1–Q${Q.length}) open the matching item from the BRD review log.</div>`;
+
+/* ---------- Overview ---------- */
+function vOverview(){
+  const cats = ['Blocker','Red Flag','Query','Suggestion','Minor'];
+  const stripe = {Blocker:'b','Red Flag':'f',Query:'q',Suggestion:'s',Minor:'m'};
+  const tiles = cats.map(c=>{
+    const all = Q.filter(q=>q.cat===c); const open = all.filter(q=>stOf(q.n)!=='agreed').length;
+    return `<button class="tile stripe-${stripe[c]}" data-filter="${c}"><span class="l">${c}</span><span class="v">${all.length}</span><span class="l">${open} still open</span></button>`;
+  }).join('');
+  const blockers = Q.filter(q=>q.cat==='Blocker').map(q=>`<tr class="click" data-q="${q.n}"><td>${pin(q.n)}</td><td class="mono small">${esc(q.sec)}</td><td>${esc(q.obs)}</td></tr>`).join('');
+  return `${banner}
+  <div class="head"><div><h1>Integrated Insurance, Bond & Trade Credit Platform</h1>
+  <p>Phase 1 covers the Bond module plus the common foundation every later module reuses. This prototype shows how the BRD would look as a working system, and where the BRD does not yet say enough to build it.</p></div></div>
+  <div class="tiles">${tiles}</div>
+  <div class="grid2">
+    <div class="panel"><h2>Phasing ${pin(1)} ${pin(8)}</h2>
+      <div class="kv">
+        <div>Section 1.1 order</div><div><div class="flow"><span class="pill ok">Bond</span><span class="arrow">→</span><span class="pill neutral">Trade Credit</span><span class="arrow">→</span><span class="pill neutral">Insurance</span></div></div>
+        <div>Section 30 order</div><div><div class="flow"><span class="pill ok">Bond</span><span class="arrow">→</span><span class="pill neutral">Insurance</span><span class="arrow">→</span><span class="pill neutral">Trade Credit</span></div></div>
+        <div>Document status</div><div>Title says "Overall", but scope sections still say Phase 1 only ${pin(8)}</div>
+        <div>Part B (16–30)</div><div>Copied from earlier draft, not yet business-reviewed ${pin(9)}</div>
+      </div>
+    </div>
+    <div class="panel"><h2>Common foundation</h2>
+      <div class="kv">
+        <div>Access & roles</div><div>SSO, maker–reviewer–approver ${pin(12)} ${pin(6)}</div>
+        <div>Masters</div><div>Entity, BU, Customer/Beneficiary, Insurer, Broker, Limit ${pin(11)} ${pin(21)}</div>
+        <div>Integrations</div><div>Zata · OMS · ERP · Email ${pin(16)}</div>
+        <div>Non-functional</div><div><span class="pill bad">Section 25 empty</span> ${pin(2)}</div>
+        <div>Migration & cut-over</div><div>Trackers, Google Forms, Freshdesk ${pin(28)} ${pin(35)}</div>
+        <div>Open-items lists</div><div>15.18 and 29 overlap ${pin(38)}</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel"><h2>Blockers to clear before build</h2><div class="tw"><table><thead><tr><th>#</th><th>BRD section</th><th>Issue</th></tr></thead><tbody>${blockers}</tbody></table></div></div>`;
+}
+
+/* ---------- New request (Step 1) ---------- */
+const CHECKLIST_SAMPLE = {
+  'Performance Bond':[['LOA / PO copy','Uploaded','LOA_XYZMRC_0921.pdf'],['Contract / MSA','Uploaded','MSA_signed.pdf'],['Customer bond format','Uploaded','PB_format.docx'],['Project schedule','Not submitted','Remark: schedule not yet issued by customer']],
+  'Bid Bond':[['Tender document','Uploaded','Tender_T101.pdf'],['EMD details','Not submitted','Remark: EMD waived for this tender'],['Customer bond format','Uploaded','BB_format.pdf']],
+  'Advance Bond':[['Contract / MSA','Uploaded','MSA.pdf'],['Advance payment clause','Uploaded','Clause_7.pdf'],['Customer bond format','Pending','—']],
+};
+let reqFlow = 'New', reqType = 'Performance Bond';
+function vRequest(){
+  const types = ['Bid Bond','Performance Bond','Advance Bond','Retention Bond','Financial Guarantee Bond','Legal Bond','Custom Bond'];
+  const ck = CHECKLIST_SAMPLE[reqType];
+  const ckHtml = ck ? `<div class="ck"><div class="h">Document</div><div class="h">Status</div><div class="h">File / remark</div>${ck.map(r=>`<div>${r[0]}</div><div><span class="pill ${r[1]==='Uploaded'?'ok':r[1]==='Pending'?'warn':'neutral'}">${r[1]}</span></div><div class="small ${r[1]==='Uploaded'?'mono':''}">${esc(r[2])}</div>`).join('')}</div>`
+    : `<div class="muted small">No checklist configured for ${esc(reqType)}.</div>`;
+  const flowNote = reqFlow==='Amendment' ? gap(5,'Amendment form fields, and which of Steps 2–6 run for each kind of change (amount, wording, beneficiary, dates), are marked "to confirm".')
+    : reqFlow==='Extension' ? gap(27,'Extension repeats Steps 3–6. What happens if the BU does not answer the 2–3 expiry reminders is not defined.') : '';
+  return `${banner}
+  <div class="head"><div><h1>New bond request</h1><p>Step 1 · Form filling by the business user. Partial save allowed. Dropdowns depend on bond type and project status (BRD 15.4).</p></div>
+  <div class="seg" role="tablist">${['New','Amendment','Extension'].map(f=>`<button data-flow="${f}" class="${reqFlow===f?'on':''}">${f==='New'?'1st · New bond':f==='Amendment'?'2nd · Amendment':'3rd · Extension'}</button>`).join('')}</div></div>
+  ${flowNote}
+  <div class="panel"><h2>Request details</h2>
+  <form class="form" id="reqForm" onsubmit="return false">
+    <div class="field"><label for="f1">Request reference ${pin(51)}<span class="src">Auto</span></label><input id="f1" type="text" readonly value="BND/ZTW01/FY27/0045"></div>
+    <div class="field"><label for="f2">Requester<span class="src">SSO</span></label><input id="f2" type="text" readonly value="Ravi Kumar · ravi.k@zetwerk.com"></div>
+    <div class="field"><label for="f3">Business unit</label><select id="f3"><option>Infrastructure BU</option><option>Energy BU</option><option>Manufacturing BU</option></select></div>
+    <div class="field"><label for="f4">BU Finance POC ${pin(6)}</label><select id="f4"><option>To be assigned</option></select></div>
+    <div class="field"><label for="f5">Legal entity<span class="src">Entity master</span></label><select id="f5"><option>Zetwerk Manufacturing Businesses Pvt Ltd</option><option>Zetwerk Engineering FZE (UAE)</option></select></div>
+    <div class="field"><label for="f6">Geography</label><select id="f6"><option>India</option><option>UAE</option></select></div>
+    <div class="field"><label for="f7">Customer ${pin(21)}<span class="src">Customer master</span></label><select id="f7"><option>XYZ Metro Rail Corp</option></select></div>
+    <div class="field"><label for="f8">Beneficiary ${pin(21)}</label><input id="f8" type="text" value="XYZ Metro Rail Corp"></div>
+    <div class="field"><label for="f9">Beneficiary classification</label><select id="f9"><option>Public</option><option>Private</option></select></div>
+    <div class="field"><label for="f10">Project name</label><input id="f10" type="text" value="Metro Line 3 – Viaduct Package C2"></div>
+    <div class="field"><label for="f11">Tender / contract reference<span class="src">Extracted</span></label><input id="f11" type="text" value="XYZMRC/C2/2026/114"></div>
+    <div class="field"><label for="f12">Bond type</label><select id="f12">${types.map(t=>`<option ${t===reqType?'selected':''}>${t}</option>`).join('')}</select></div>
+    <div class="field"><label for="f13">Requested bond amount (₹)</label><input id="f13" type="text" class="num" value="5,00,00,000"></div>
+    <div class="field"><label for="f14">Contract value (₹)<span class="src">Extracted</span></label><input id="f14" type="text" class="num" value="50,00,00,000"></div>
+    <div class="field"><label for="f15">Proposed start</label><input id="f15" type="date" value="2026-11-01"></div>
+    <div class="field"><label for="f16">Proposed expiry</label><input id="f16" type="date" value="2027-12-05"></div>
+    <div class="field"><label for="f17">Claim-expiry date</label><input id="f17" type="date" value="2028-03-05"></div>
+    <div class="field"><label for="f18">Required by</label><input id="f18" type="date" value="2026-10-25"></div>
+    <div class="field"><label for="f19">Project status ${pin(36)}</label><select id="f19">${['Under evaluation','Bid submitted','Awarded','Active','Partially completed (%)','Completed','Cancelled','Dropped','Rejected'].map(s=>`<option ${s==='Awarded'?'selected':''}>${s}</option>`).join('')}</select></div>
+    <div class="field"><label for="f20">Bond requirement status ${pin(30)}</label><select id="f20">${['Required','Under assessment','Awaiting wording / documents clarification','No longer required','Issued','Extended','Returned','Expired','Invoked'].map(s=>`<option>${s}</option>`).join('')}</select></div>
+  </form></div>
+  <div class="panel"><h2>Document checklist · ${esc(reqType)} ${pin(4)}</h2>
+    <p class="muted small" style="margin:0 0 10px">For each document, upload it or give a mandatory remark. The list below is a placeholder: the BRD says the list differs per bond type but does not give it.</p>
+    ${ckHtml}
+    <label class="toggle" style="margin-top:12px" for="f21"><input type="checkbox" id="f21" checked> I confirm the documents are complete</label>
+  </div>
+  <div class="btns"><button class="btn" data-toast="Draft saved">Save as draft</button><button class="btn primary" data-toast="Submitted to Bond Team · BND/ZTW01/FY27/0045">Submit to Bond Team</button></div>`;
+}
+
+/* ---------- Workflow ---------- */
+const STEPS = [
+  {k:'1',t:'Request submission',o:'Business user',pins:[4,6],
+   rows:[['Submitted on','03-Oct-2026 11:42'],['Requester','Ravi Kumar · Infrastructure BU'],['Bond','Performance Bond · ₹5,00,00,000'],['Documents','3 uploaded · 1 remark']]},
+  {k:'2',t:'Market quotation',o:'Bond Team',pins:[7,32,3,25,18],
+   rows:[['2a Verification','Complete <span class="chip">value list not defined</span> '+pin(30)],['2b Limit check','Insurer A: ₹10.00 Cr available · eligible'],['2b Eligible insurers','Insurer A, Insurer B '+pin(32)],['2c Proposal','PRP/0045 v1 · generated '+pin(3)],['2d Sent to insurer','Outside platform, outcome recorded '+pin(25)],['2e Quoted rate','0.80% p.a. (Insurer A)']]},
+  {k:'3',t:'Internal approval',o:'Approver (single POC)',pins:[40,26,23],
+   rows:[['Approver','To be assigned '+pin(6)],['Decision','Pending'],['If rejected','Returns to maker – which maker? '+pin(26)],['Over-limit cases','Approver not defined '+pin(23)]]},
+  {k:'4',t:'Bond placement',o:'Bond Team · BU · Finance',pins:[31,22,33,17],
+   rows:[['4a Draft bond & PI','Uploaded · PI/IA/2026/7781'],['4b BU confirmation','Confirmed by BU <span class="chip">no "changes requested" path</span> '+pin(31)],['4c Premium check','₹250 variance flagged · tolerance not defined '+pin(22)],['4d Payment','Paid in OMS · UTR HDFC0000123456 '+pin(33)]]},
+  {k:'5',t:'Final bond issued',o:'Bond Team',pins:[41,24,10],
+   rows:[['Final bond','Uploaded · values extracted for validation'],['Bond number','IA/PB/26/00981'],['Dates','01-Nov-2026 → 05-Dec-2027 · claim till 05-Mar-2028'],['Draft vs final check','Not in BRD '+pin(41)],['Limit','₹5.00 Cr utilised on Insurer A '+pin(10)]]},
+  {k:'6',t:'Closure & monitoring',o:'Bond Team',pins:[42,20,30],
+   rows:[['Tax invoice','Uploaded · insurer GSTIN extracted '+pin(42)],['ERP posting','Not covered by BRD '+pin(20)],['Disposition','Active '+pin(30)],['Monitoring','Expiry 05-Dec-2027 · claim-expiry 05-Mar-2028']]}
+];
+let wfAt = 3, wfSel = 3;
+function vWorkflow(){
+  const s = STEPS[wfSel];
+  return `${banner}
+  <div class="head"><div><h1>BND/ZTW01/FY27/0045</h1><p>Performance Bond · ₹5,00,00,000 · XYZ Metro Rail Corp · Infrastructure BU</p></div>
+  <div class="btns"><button class="btn" id="wfBack" ${wfAt===0?'disabled':''}>Move back</button><button class="btn primary" id="wfNext" ${wfAt>=5?'disabled':''}>${wfAt>=5?'Workflow closed':'Complete step '+STEPS[wfAt].k}</button></div></div>
+  <div class="stepper">${STEPS.map((x,i)=>`<button class="step ${i<wfAt?'done':''} ${i===wfAt?'cur':''} ${i===wfSel?'sel':''}" data-step="${i}"><span class="n">STEP ${x.k}</span><span class="t">${x.t}</span><span class="o">${x.o}</span></button>`).join('')}</div>
+  <div class="grid2">
+    <div class="panel"><h2>Step ${s.k} · ${s.t}</h2><div class="kv">${s.rows.map(r=>`<div>${r[0]}</div><div>${r[1]}</div>`).join('')}</div></div>
+    <div class="panel"><h2>Open points on this step</h2>
+      <div style="display:flex;flex-direction:column;gap:8px">${s.pins.map(n=>`<div class="gap-note" style="background:var(--surface2);border-color:var(--line)">${pin(n)}<div>${esc(Q[n-1].obs)}</div></div>`).join('')}</div>
+    </div>
+  </div>
+  <div class="panel"><h2>Activity</h2><div class="tw"><table class="ledger"><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>
+    <tr><td class="mono">03-Oct 11:42</td><td>Ravi Kumar</td><td>Request submitted</td></tr>
+    <tr><td class="mono">04-Oct 10:05</td><td>Bond Team</td><td>Clarification raised: signed LOA copy needed <span class="chip">email notification missing in 20.4</span> ${pin(39)}</td></tr>
+    <tr><td class="mono">04-Oct 16:30</td><td>Ravi Kumar</td><td>Clarification answered</td></tr>
+    <tr><td class="mono">05-Oct 09:12</td><td>System</td><td>Limit check passed · proposal PRP/0045 v1 generated</td></tr>
+    <tr><td class="mono">05-Oct 12:00</td><td>Bond Team</td><td>Proposal sent to Insurer A (outside platform) ${pin(17)}</td></tr>
+    <tr><td class="mono">07-Oct 15:40</td><td>Bond Team</td><td>Quote recorded: 0.80% p.a.</td></tr>
+  </tbody></table></div></div>`;
+}
+
+/* ---------- Limits ---------- */
+const FAC = [
+  ['Insurer A','ZMBPL','India','Performance',50,40,'INR'],
+  ['Insurer A','ZMBPL','India','Bid',20,6.5,'INR'],
+  ['Insurer B','ZMBPL','India','Performance',30,12,'INR'],
+  ['Insurer B','ZMBPL','India','Advance',25,24,'INR'],
+  ['Insurer C','ZEFZE','UAE','Performance',5,3.2,'USD Mn']
+];
+let L, ledger, pendingReserve;
+function resetLim(){ L = {sanc:50, util:40, resv:0, over:0, blocked:0}; ledger=[{a:'Opening balance',d:0,rule:'Migrated',ok:true}]; pendingReserve=false; }
+resetLim();
+const avail = () => L.sanc - L.util - L.resv;
+function act(kind){
+  if (kind==='issue'){ L.util+=5; ledger.unshift({a:'Final bond uploaded · ₹5.00 Cr',d:+5,rule:'Rule 1 · utilise on final bond upload',ok:true}); }
+  if (kind==='return'){ const r=Math.min(5,L.util); L.util-=r; ledger.unshift({a:'Bond returned / cancelled · ₹5.00 Cr',d:-r,rule:'Rule 2 · restore automatically',ok:true}); }
+  if (kind==='expireB'){ const r=Math.min(5,L.util); L.util-=r; ledger.unshift({a:'Expiry on bond-expiry date · ₹5.00 Cr released',d:-r,rule:'Rule 3 · bond still claimable for 3 months',ok:false,q:13}); }
+  if (kind==='expireC'){ const r=Math.min(5,L.util); L.util-=r; ledger.unshift({a:'Expiry on claim-expiry date · ₹5.00 Cr released',d:-r,rule:'Rule 3 · safer option, needs confirmation',ok:false,q:13}); }
+  if (kind==='amend'){ L.util+=3; ledger.unshift({a:'Amendment ₹5 Cr → ₹8 Cr · +₹3.00 Cr (assumed)',d:+3,rule:'No rule for amendments',ok:false,q:10}); }
+  if (kind==='pipe'){ pendingReserve=!pendingReserve; if(pendingReserve){L.resv+=8; ledger.unshift({a:'Approved pipeline request ₹8.00 Cr reserved (assumed)',d:+8,rule:'Rule 6 · reservation not confirmed',ok:false,q:19});} else {L.resv-=8; ledger.unshift({a:'Pipeline reservation released',d:-8,rule:'Rule 6',ok:false,q:19});} }
+  if (kind==='over'){ const ex = Math.max(0,12-avail()); L.util+=12-ex; L.over+=ex; ledger.unshift({a:`Over-limit issue ₹12.00 Cr · ₹${cr(ex)} Cr over`,d:+12,rule:'Flagged, not blocked · approver & insurer flow undefined',ok:false,q:23}); }
+  if (kind==='invoke'){ ledger.unshift({a:'Bond invoked · ₹5.00 Cr stays utilised',d:0,rule:'Rule 4 · held until disposition · workflow undefined',ok:false,q:34}); }
+  if (kind==='reset'){ resetLim(); }
+  render();
+}
+function vLimits(){
+  const rows = FAC.map(f=>{const p=f[5]/f[4]*100; const col=p>90?'var(--bad)':p>75?'var(--warn)':'var(--accent)';
+    return `<tr><td>${f[0]}</td><td>${f[1]}</td><td>${f[2]}</td><td>${f[3]}</td><td class="r num">${cr(f[4])}</td><td class="r num">${cr(f[5])}</td><td class="r num">${cr(f[4]-f[5])}</td><td><div class="bar"><i style="width:${p}%;background:${col}"></i></div></td><td class="small">${f[6]}${f[6]!=='INR'?' '+pin(14):''}</td></tr>`;}).join('');
+  const a = avail(); const used = L.util/L.sanc*100, res = L.resv/L.sanc*100;
+  return `${banner}
+  <div class="head"><div><h1>Bond facility & limit master</h1><p>Sanctioned amount is held per insurer, entity, geography and bond type (BRD 15.2). Amounts in ₹ Cr unless shown.</p></div>
+  <div class="btns"><button class="btn" data-toast="Edit opens directly — no maker-checker in BRD (Q43)">Edit sanctioned limit</button> ${pin(43)} ${pin(11)} ${pin(37)}</div></div>
+  <div class="panel"><div class="tw"><table><thead><tr><th>Insurer</th><th>Entity</th><th>Geo</th><th>Bond type</th><th class="r">Sanctioned</th><th class="r">Utilised</th><th class="r">Available</th><th>Use</th><th>Ccy</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <div style="margin-top:10px">${gap(14,'UAE facility is in USD; bonds may be in AED. Currency of limit, FX rate source and rate date are not defined.')}</div></div>
+  <div class="grid2">
+    <div class="panel"><h2>Limit simulator · Insurer A · Performance</h2>
+      <p class="muted small" style="margin:0 0 12px">Click an event to see how the BRD rules move the limit. Amber rows are where the BRD gives no rule, so the prototype had to assume one.</p>
+      <div class="tiles" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))">
+        <div class="tile"><span class="l">Sanctioned</span><span class="v">${cr(L.sanc)}</span></div>
+        <div class="tile"><span class="l">Utilised</span><span class="v">${cr(L.util)}</span></div>
+        <div class="tile"><span class="l">Reserved ${pin(19)}</span><span class="v">${cr(L.resv)}</span></div>
+        <div class="tile ${a<0?'stripe-b':''}"><span class="l">Available</span><span class="v" style="color:${a<0?'var(--bad)':'inherit'}">${cr(a)}</span></div>
+      </div>
+      <div class="bar" style="height:14px;margin:12px 0 6px"><i style="width:${Math.min(100,used)}%;background:var(--accent)"></i><i style="width:${Math.max(0,Math.min(100-used,res))}%;background:var(--query)"></i></div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>Utilised</span><span><i style="background:var(--query)"></i>Reserved</span><span><i style="background:var(--surface2);border:1px solid var(--line)"></i>Available</span>${L.over>0?`<span class="pill bad">Over-limit exposure ₹${cr(L.over)} Cr</span>`:''}</div>
+      <div class="sec" style="margin-top:14px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:600">Defined in BRD</div>
+      <div class="btns" style="margin-top:6px"><button class="btn" data-act="issue">Upload final bond ₹5 Cr</button><button class="btn" data-act="return">Return bond ₹5 Cr</button></div>
+      <div class="sec" style="margin-top:12px;font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:600">Unclear or missing in BRD</div>
+      <div class="btns" style="margin-top:6px"><button class="btn" data-act="expireB">Expire at bond expiry</button><button class="btn" data-act="expireC">Expire at claim expiry</button><button class="btn" data-act="amend">Amend ₹5 → ₹8 Cr</button><button class="btn" data-act="pipe">${pendingReserve?'Release':'Reserve'} ₹8 Cr pipeline</button><button class="btn" data-act="over">Issue ₹12 Cr bond</button><button class="btn" data-act="invoke">Invoke bond</button><button class="btn" data-act="reset">Reset</button></div>
+    </div>
+    <div class="panel"><h2>Limit movement ledger</h2><div class="tw"><table class="ledger"><thead><tr><th>Event</th><th class="r">Δ ₹ Cr</th><th>Rule</th></tr></thead><tbody>
+      ${ledger.map(e=>`<tr><td>${esc(e.a)}</td><td class="r num">${e.d>0?'+':''}${e.d?cr(e.d):'–'}</td><td class="small">${e.ok?`<span class="pill ok">BRD</span> ${esc(e.rule)}`:`<span class="pill warn">Gap</span> ${esc(e.rule)} ${e.q?pin(e.q):''}`}</td></tr>`).join('')}
+    </tbody></table></div></div>
+  </div>`;
+}
+
+/* ---------- Premium ---------- */
+let P = {amt:50000000, rate:0.8, s:'2026-11-01', e:'2027-12-05', stamp:500, basis:'days', pi:null};
+function prem(){
+  const d = Math.max(1, Math.round((new Date(P.e)-new Date(P.s))/86400000));
+  const m = Math.ceil(d/30.4375); const y = Math.ceil(d/365);
+  const f = P.basis==='days' ? d/365 : P.basis==='months' ? m/12 : y;
+  const premium = P.amt*P.rate/100*f; const gst = premium*0.18; const total = premium+gst+P.stamp;
+  return {d,m,y,premium,gst,total,months:Math.max(1,Math.round(d/365*12))};
+}
+function vPremium(){
+  const r = prem(); if (P.pi===null) P.pi = Math.round(r.total)+250;
+  const v = P.pi - r.total;
+  const mo = r.premium / r.months;
+  return `${banner}
+  <div class="head"><div><h1>Premium & proforma invoice check</h1><p>Step 4c. The platform calculates the expected premium and compares it with the insurer's PI before payment (BRD 15.8).</p></div></div>
+  <div class="grid2">
+    <div class="panel"><h2>Inputs</h2>
+      <form class="form" onsubmit="return false">
+        <div class="field"><label for="p1">Bond amount (₹)</label><input id="p1" type="number" data-p="amt" value="${P.amt}"></div>
+        <div class="field"><label for="p2">Approved rate (% p.a.)</label><input id="p2" type="number" step="0.01" data-p="rate" value="${P.rate}"></div>
+        <div class="field"><label for="p3">Bond start</label><input id="p3" type="date" data-p="s" value="${P.s}"></div>
+        <div class="field"><label for="p4">Bond expiry</label><input id="p4" type="date" data-p="e" value="${P.e}"></div>
+        <div class="field"><label for="p5">Stamp paper (₹) · manual</label><input id="p5" type="number" data-p="stamp" value="${P.stamp}"></div>
+        <div class="field"><label for="p6">PI total from insurer (₹)<span class="src">Extracted</span></label><input id="p6" type="number" data-p="pi" value="${P.pi}"></div>
+        <div class="field full"><label>Calculation basis ${pin(22)}</label>
+          <div class="seg">${[['days','Pro-rata days'],['months','Months, rounded up'],['years','Years, rounded up']].map(b=>`<button type="button" data-basis="${b[0]}" class="${P.basis===b[0]?'on':''}">${b[1]}</button>`).join('')}</div></div>
+      </form>
+    </div>
+    <div class="panel"><h2>Result</h2>
+      <div class="kv">
+        <div>Tenure</div><div class="num">${r.d} days · ${r.m} months · ${r.y} yr</div>
+        <div>Premium</div><div class="num">₹ ${inr(r.premium)}</div>
+        <div>GST @ 18%</div><div class="num">₹ ${inr(r.gst)}</div>
+        <div>Stamp paper</div><div class="num">₹ ${inr(P.stamp)}</div>
+        <div>Expected total</div><div class="num"><b>₹ ${inr(r.total)}</b></div>
+        <div>PI total</div><div class="num">₹ ${inr(P.pi)}</div>
+        <div>Variance</div><div><span class="num">₹ ${inr(v)}</span> <span class="pill ${Math.abs(v)<1?'ok':'warn'}">${Math.abs(v)<1?'Matches':'Flagged'}</span></div>
+      </div>
+      <div style="margin-top:12px">${gap(22,'Tolerance (₹ or %), what happens on a variance, and which basis each insurer uses. Switch the basis above: the same bond gives very different premiums.')}</div>
+    </div>
+  </div>
+  <div class="panel"><h2>What Finance would book in ERP ${pin(20)}</h2>
+    <p class="muted small" style="margin:0 0 10px">Illustration only. The BRD does not say whether the platform sends premium data to ERP or Finance books it manually from the tax invoice.</p>
+    <div class="tw"><table><thead><tr><th>Entry</th><th>Account</th><th class="r">Debit ₹</th><th class="r">Credit ₹</th></tr></thead><tbody>
+      <tr><td rowspan="4">On tax invoice</td><td>Prepaid bond premium</td><td class="r num">${inr(r.premium)}</td><td></td></tr>
+      <tr><td>GST input credit ${pin(42)}</td><td class="r num">${inr(r.gst)}</td><td></td></tr>
+      <tr><td>Stamp duty expense</td><td class="r num">${inr(P.stamp)}</td><td></td></tr>
+      <tr><td>Insurer (vendor)</td><td></td><td class="r num">${inr(r.total)}</td></tr>
+      <tr><td rowspan="2">Monthly × ${r.months}</td><td>Bond premium expense</td><td class="r num">${inr(mo)}</td><td></td></tr>
+      <tr><td>Prepaid bond premium</td><td></td><td class="r num">${inr(mo)}</td></tr>
+    </tbody></table></div>
+  </div>`;
+}
+
+/* ---------- Dashboard ---------- */
+function vDash(){
+  const ins = [['Insurer A',70,46.5],['Insurer B',55,36],['Insurer C (USD Mn)',5,3.2]];
+  const exp = [['IA/PB/25/00412','Performance','2.40','12-Nov-2026','12-Feb-2027','Reminder 1 sent'],['IB/AB/25/00077','Advance','1.10','28-Nov-2026','28-Nov-2026','No reply'],['IA/BB/26/00103','Bid','0.35','03-Dec-2026','03-Jan-2027','—']];
+  return `${banner}
+  <div class="head"><div><h1>Bond dashboard</h1><p>A few of the 17 dashboards in BRD 15.17, filled with sample data.</p></div> <div>${pin(44)} ${pin(46)}</div></div>
+  <div class="tiles">
+    <div class="tile"><span class="l">Active bonds</span><span class="v">148</span><span class="l">₹ 389.6 Cr face value</span></div>
+    <div class="tile"><span class="l">Expiring in 60 days</span><span class="v">9</span><span class="l">3 without BU reply ${pin(27)}</span></div>
+    <div class="tile stripe-f"><span class="l">Final bond pending ${pin(15)}</span><span class="v">4</span><span class="l">payment done, bond not uploaded</span></div>
+    <div class="tile"><span class="l">Tax invoice pending</span><span class="v">11</span><span class="l">after issuance ${pin(24)}</span></div>
+    <div class="tile"><span class="l">Requests past SLA</span><span class="v">—</span><span class="l">no SLA defined ${pin(7)}</span></div>
+    <div class="tile"><span class="l">Bid bonds awarded, no PB yet</span><span class="v">2</span><span class="l">rule not stated ${pin(47)}</span></div>
+  </div>
+  <div class="grid2">
+    <div class="panel"><h2>Limit utilisation by insurer</h2>
+      <div style="display:flex;flex-direction:column;gap:12px">${ins.map(i=>{const p=i[2]/i[1]*100;return `<div><div style="display:flex;justify-content:space-between;font-size:13px"><span>${i[0]}</span><span class="num muted">${cr(i[2])} / ${cr(i[1])} · ${Math.round(p)}%</span></div><div class="bar" style="height:10px;margin-top:4px"><i style="width:${p}%;background:${p>75?'var(--warn)':'var(--accent)'}"></i></div></div>`}).join('')}</div>
+      <p class="small muted" style="margin:12px 0 0">Mixed INR and USD totals cannot be added without an FX rule ${pin(14)}</p>
+    </div>
+    <div class="panel"><h2>Upcoming expiries</h2><div class="tw"><table><thead><tr><th>Bond no.</th><th>Type</th><th class="r">₹ Cr</th><th>Expiry</th><th>Claim expiry ${pin(13)}</th><th>Extension</th></tr></thead><tbody>
+      ${exp.map(e=>`<tr><td class="mono small">${e[0]}</td><td>${e[1]}</td><td class="r num">${e[2]}</td><td class="num small">${e[3]}</td><td class="num small">${e[4]}</td><td class="small">${e[5]}</td></tr>`).join('')}
+    </tbody></table></div></div>
+  </div>`;
+}
+
+/* ---------- Review log ---------- */
+let LF = {cat:'All', ph:'All', st:'All', q:''};
+function vLog(){
+  const cats=['All','Blocker','Red Flag','Query','Suggestion','Minor'], phs=['All','Common','Phase 1 – Bond','Phase 2 – TCI','Phase 3 – Insurance'], sts=['All','open','discussed','agreed'];
+  const rows = Q.filter(q=>(LF.cat==='All'||q.cat===LF.cat)&&(LF.ph==='All'||q.ph===LF.ph)&&(LF.st==='All'||stOf(q.n)===LF.st)&&(!LF.q||(q.sec+' '+q.obs+' '+q.ex).toLowerCase().includes(LF.q.toLowerCase())));
+  const stPill = s => `<span class="pill ${s==='agreed'?'ok':s==='discussed'?'warn':'neutral'}">${s}</span>`;
+  return `<div class="head"><div><h1>BRD review log</h1><p>Same ${Q.length} items as BRD_Review_Query_Log.xlsx. Mark items as discussed or agreed during the call; marks are saved in this browser only.</p></div></div>
+  <div class="panel" style="display:flex;flex-direction:column;gap:10px">
+    <div class="flt"><span class="small muted">Category</span>${cats.map(c=>`<button class="fbtn ${LF.cat===c?'on':''}" data-lf="cat" data-v="${c}">${c}</button>`).join('')}</div>
+    <div class="flt"><span class="small muted">Phase</span>${phs.map(c=>`<button class="fbtn ${LF.ph===c?'on':''}" data-lf="ph" data-v="${c}">${c}</button>`).join('')}</div>
+    <div class="flt"><span class="small muted">Status</span>${sts.map(c=>`<button class="fbtn ${LF.st===c?'on':''}" data-lf="st" data-v="${c}">${c}</button>`).join('')}
+      <input id="lq" type="text" placeholder="Search section or text" value="${esc(LF.q)}" style="max-width:260px;margin-left:auto"></div>
+  </div>
+  <div class="panel"><div class="tw"><table><thead><tr><th>#</th><th>Category</th><th>Pri</th><th>BRD section</th><th>Issue</th><th>Status</th></tr></thead><tbody>
+    ${rows.map(q=>`<tr class="click" data-q="${q.n}"><td class="mono">Q${q.n}</td><td><span class="pill ${CATSLUG(q.cat)}">${q.cat}</span></td><td class="small">${q.pri}</td><td class="mono small">${esc(q.sec)}</td><td>${esc(q.obs)}</td><td>${stPill(stOf(q.n))}</td></tr>`).join('') || `<tr><td colspan="6" class="muted">No items match these filters.</td></tr>`}
+  </tbody></table></div><p class="small muted" style="margin:10px 0 0">${rows.length} of ${Q.length} shown</p></div>`;
+}
+
+/* ---------- drawer ---------- */
+function openQ(n){
+  const q = Q[n-1]; const s = stOf(n); const note = (ST[n]&&ST[n].note)||'';
+  const where = (SCREEN_OF[n]||[]).map(id=>`<button class="btn" data-goto="${id}">${SCREENS.find(x=>x.id===id).name}</button>`).join('');
+  document.getElementById('drawerRoot').innerHTML = `<div class="scrim" data-close></div>
+  <aside class="drawer" role="dialog" aria-label="Query Q${n}">
+    <div class="dh"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="mono" style="font-size:18px;font-weight:500">Q${n}</span><span class="pill ${CATSLUG(q.cat)}">${q.cat}</span><span class="pill neutral">${q.pri}</span><span class="pill neutral">${q.ph}</span></div><button class="x" data-close aria-label="Close">×</button></div>
+      <div class="mono small muted">BRD ${esc(q.sec)}</div>
+      <div class="seg">${['open','discussed','agreed'].map(x=>`<button data-st="${x}" data-n="${n}" class="${s===x?'on':''}">${x[0].toUpperCase()+x.slice(1)}</button>`).join('')}</div>
+    </div>
+    <div class="db">
+      <div><div class="sec">Issue</div><p>${esc(q.obs)}</p></div>
+      <div class="ex"><div class="sec">Example</div><p>${esc(q.ex)}</p></div>
+      <div><div class="sec">Impact</div><p>${esc(q.imp)}</p></div>
+      <div><div class="sec">Suggested resolution</div><p>${esc(q.res)}</p></div>
+      <div><div class="sec">Meeting note</div><textarea id="qnote" rows="3" data-n="${n}" placeholder="Decision or owner agreed in the call">${esc(note)}</textarea></div>
+      ${where?`<div><div class="sec">Shown on</div><div class="btns">${where}</div></div>`:''}
+      <div class="btns">${n>1?`<button class="btn" data-qnav="${n-1}">← Q${n-1}</button>`:''}${n<Q.length?`<button class="btn" data-qnav="${n+1}">Q${n+1} →</button>`:''}</div>
+    </div>
+  </aside>`;
+  const x = document.querySelector('.drawer .x'); x && x.focus();
+}
+function closeQ(){ document.getElementById('drawerRoot').innerHTML=''; }
+function toast(t){ const d=document.createElement('div'); d.className='toast'; d.textContent=t; document.body.appendChild(d); setTimeout(()=>d.remove(),2200); }
+
+/* ---------- render & events ---------- */
+function render(){
+  const v = {overview:vOverview, request:vRequest, workflow:vWorkflow, limits:vLimits, premium:vPremium, dash:vDash, log:vLog}[cur];
+  document.getElementById('main').innerHTML = v();
+}
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-q],[data-nav],[data-close],[data-goto],[data-qnav],[data-st],[data-flow],[data-step],[data-act],[data-basis],[data-lf],[data-filter],[data-toast],#wfNext,#wfBack');
+  if (!t) return;
+  if (t.matches('[data-close]')) return closeQ();
+  if (t.dataset.nav) return go(t.dataset.nav);
+  if (t.dataset.goto){ closeQ(); return go(t.dataset.goto); }
+  if (t.dataset.qnav) return openQ(+t.dataset.qnav);
+  if (t.dataset.st){ const n=+t.dataset.n; ST[n]=Object.assign(ST[n]||{}, {s:t.dataset.st}); saveST(); render(); return openQ(n); }
+  if (t.dataset.q) return openQ(+t.dataset.q);
+  if (t.dataset.flow){ reqFlow=t.dataset.flow; return render(); }
+  if (t.dataset.step){ wfSel=+t.dataset.step; return render(); }
+  if (t.id==='wfNext'){ if(wfAt<5){wfAt++; wfSel=wfAt;} toast(wfAt>=5?'Workflow closed · monitoring continues':'Moved to Step '+STEPS[wfAt].k); return render(); }
+  if (t.id==='wfBack'){ if(wfAt>0){wfAt--; wfSel=wfAt;} return render(); }
+  if (t.dataset.act) return act(t.dataset.act);
+  if (t.dataset.basis){ P.basis=t.dataset.basis; return render(); }
+  if (t.dataset.lf){ LF[t.dataset.lf]=t.dataset.v; return render(); }
+  if (t.dataset.filter){ LF={cat:t.dataset.filter,ph:'All',st:'All',q:''}; return go('log'); }
+  if (t.dataset.toast) return toast(t.dataset.toast);
+});
+document.addEventListener('change', e=>{
+  if (e.target.id==='f12'){ reqType=e.target.value; render(); }
+  if (e.target.dataset && e.target.dataset.p){ const k=e.target.dataset.p; P[k] = (k==='s'||k==='e') ? e.target.value : (+e.target.value||0); render(); }
+});
+document.addEventListener('input', e=>{
+  if (e.target.id==='lq'){ LF.q=e.target.value; const pos=e.target.selectionStart; render(); const i=document.getElementById('lq'); if(i){i.focus(); try{i.setSelectionRange(pos,pos);}catch(_){}} }
+  if (e.target.id==='qnote'){ const n=+e.target.dataset.n; ST[n]=Object.assign(ST[n]||{s:'open'}, {note:e.target.value}); saveST(); }
+});
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeQ(); });
+document.getElementById('pinToggle').addEventListener('change', e=>{ document.body.classList.toggle('no-pins', !e.target.checked); });
+renderNav(); render();
+</script>
+
+</body>
+</html>
