@@ -1618,6 +1618,60 @@ A.gSave=()=>{const n=val('gName');if(!n)return toast('Name the group.',1);const 
 A.gDel=el=>{const g=GRP(el.dataset.id),used=(S.settings.workflows||[]).some(w=>w.bands.some(bd=>bd.levels.some(l=>l.group===g.id)));if(used)return toast('This group is used in an approval workflow. Change the workflow first.',1);
   confirmBox('Delete group '+esc(g.name)+'?','Its members keep their user accounts and roles.','Delete group',()=>{ACCESS.groups=ACCESS.groups.filter(x=>x!==g);audit('Users','Deleted user group',g.name,'');save();render()},{danger:true})};
 </script>
+<script>
+/* ============ bank accounts: many per entity, insurer or broker ============ */
+const PARTY={'Our entity':'entities','Insurer':'insurers','Broker':'brokers'};
+const PARTY_OF={entities:'Our entity',insurers:'Insurer',brokers:'Broker'};
+(()=>{const drop=['payee','payBank','payAcc','payIfsc'];MDEF.insurers.f=MDEF.insurers.f.filter(f=>!drop.includes(f[0]));
+  const ac={l:'Bank accounts',d:'Bank accounts of our entities, insurers and brokers. Several per party; mark one as default. You can also add them from the entity, insurer or broker screen.',
+    f:[['account','Account number','text',1],['partyType','Belongs to','sel',1,()=>Object.keys(PARTY)],['party','Entity / insurer / broker','sel',1,()=>Object.entries(PARTY).flatMap(([t,k])=>MA(k).map(r=>[r.name,r.name+' ('+t.toLowerCase()+')']))],['payee','Account name (as per bank)','text',1],['bank','Bank','text',1],['branch','Branch','text'],['ifsc','IFSC / SWIFT','text'],['currency','Currency','sel',0,()=>MA('currencies').map(c=>c.code)],['isDefault','Default for this party','bool']],
+    used:r=>S.bonds.filter(b=>b.payment?.from?.account===r.account||b.payment?.payee?.account===r.account).length};
+  const E=Object.entries(MDEF).filter(([k])=>k!=='banks');Object.keys(MDEF).forEach(k=>delete MDEF[k]);E.forEach(([k,v])=>{MDEF[k]=v;if(k==='geos')MDEF.accounts=ac});if(!MDEF.accounts)MDEF.accounts=ac;
+  if(ui.mst==='banks')ui.mst='accounts'})();
+function ensureAccts(){if(!S||S.settings.acctSeeded)return;S.settings.acctSeeded=true;const L=S.m.accounts=S.m.accounts||[],add=o=>{if(o.account&&!L.some(x=>x.account===o.account&&x.party===o.party))L.push({id:uid('m'),branch:'',ifsc:'',currency:'',active:true,createdAt:now(),createdBy:'Migration',...o})};
+  M('banks').forEach(x=>add({account:x.account,partyType:'Our entity',party:x.entity||'',payee:x.entity||'Zetwerk',bank:x.bank,branch:x.branch||'',ifsc:x.ifsc||'',isDefault:true}));
+  M('insurers').forEach(i=>{if(i.payAcc)add({account:i.payAcc,partyType:'Insurer',party:i.name,payee:i.payee||i.name,bank:i.payBank||'',ifsc:i.payIfsc||'',isDefault:true})});save()}
+const _renderAc=render;render=function(){if(MODE==='shared'||MODE==='local')ensureAccts();_renderAc()};
+const acctsOf=(type,name)=>MA('accounts').filter(x=>x.partyType===type&&(x.party===name||(type==='Our entity'&&!x.party))).sort((a,c)=>(c.isDefault?1:0)-(a.isDefault?1:0));
+const accLabel=x=>(x.bank||'Bank')+' · '+mask(x.account)+(x.ifsc?' · '+x.ifsc:'')+(x.branch?' · '+x.branch:'');
+
+/* accounts inside the entity / insurer / broker form */
+const _mForm=mForm;mForm=function(rec){_mForm(rec);const k=ui.mst;if(!PARTY_OF[k])return;const type=PARTY_OF[k],name=rec?.name||'';
+  ui.modal.accts=name?clone(M('accounts').filter(x=>x.partyType===type&&x.party===name)):[];ui.modal.acType=type;ui.modal.acParty=name;
+  const box=document.createElement('div');box.id='acBox';$('#modal-root .dlg .foot').before(box);acBox()};
+function acBox(){const m=ui.modal,b=$('#acBox');if(!b)return;
+  b.innerHTML=`<h3 style="margin:16px 0 6px">Bank accounts</h3><p class="mu" style="margin:0 0 8px">${m.acType==='Our entity'?'Accounts premiums are paid from.':'Accounts premiums are paid into.'} Add as many as needed; the default is picked first on the payment step.</p>
+  ${m.accts.length?tbl('<th>Account name</th><th>Bank</th><th>Account number</th><th>IFSC / SWIFT</th><th>Branch</th><th>Default</th><th></th>',m.accts.map((x,i)=>`<tr><td><input id="ac_${i}_payee" value="${esc(x.payee||'')}"></td><td><input id="ac_${i}_bank" value="${esc(x.bank||'')}"></td><td><input id="ac_${i}_account" value="${esc(x.account||'')}"></td><td><input id="ac_${i}_ifsc" value="${esc(x.ifsc||'')}"></td><td><input id="ac_${i}_branch" value="${esc(x.branch||'')}"></td><td style="text-align:center"><input type="radio" name="acDef" id="ac_${i}_def" ${x.isDefault?'checked':''} aria-label="Default"></td><td><button class="btn sm d" data-a="acDel" data-i="${i}" ${S.bonds.some(b=>b.payment?.from?.account===x.account||b.payment?.payee?.account===x.account)&&x.id?'disabled title="Used in a payment"':''}>Remove</button></td></tr>`).join('')):'<p class="mu">No bank accounts yet.</p>'}
+  <button class="btn sm" data-a="acAdd" style="margin-top:8px">Add bank account</button>`}
+function acSync(){const m=ui.modal;(m.accts||[]).forEach((x,i)=>{['payee','bank','account','ifsc','branch'].forEach(f=>{const el=$('#ac_'+i+'_'+f);if(el)x[f]=el.value.trim()});x.isDefault=!!$('#ac_'+i+'_def')?.checked})}
+A.acAdd=()=>{acSync();const m=ui.modal;m.accts.push({payee:val('mf_name')||'',bank:'',account:'',ifsc:'',branch:'',isDefault:!m.accts.length});acBox()};
+A.acDel=el=>{acSync();ui.modal.accts.splice(+el.dataset.i,1);acBox()};
+const _mSaveAc=A.mSave;A.mSave=()=>{const k=ui.mst,m=ui.modal;
+  if(k==='accounts'){const t=val('mf_partyType'),p=val('mf_party');if(t&&p&&!MA(PARTY[t]).some(r=>r.name===p))return toast(p+' is not in the '+t.toLowerCase()+' list. Pick the right “Belongs to”.',1)}
+  if(!PARTY_OF[k]){const before=m?.id;_mSaveAc();if(k==='accounts'&&!inModal()){const L=M('accounts'),cur=before?L.find(x=>x.id===before):L.at(-1);if(cur?.isDefault){L.forEach(x=>{if(x!==cur&&x.partyType===cur.partyType&&x.party===cur.party)x.isDefault=false});save();render()}}return}
+  acSync();const rows=(m.accts||[]).filter(x=>x.account||x.bank||x.payee);const bad=rows.find(x=>!x.account||!x.bank);if(bad)return toast('Each bank account needs a bank and an account number.',1);
+  if(rows.length&&!rows.some(x=>x.isDefault))rows[0].isDefault=true;
+  const type=m.acType,oldName=m.acParty,newName=val('mf_name');_mSaveAc();if(inModal())return;const name=newName||oldName;
+  const keep=M('accounts').filter(x=>!(x.partyType===type&&x.party===oldName&&oldName));S.m.accounts=[...keep,...rows.map(x=>({id:x.id||uid('m'),account:x.account,partyType:type,party:name,payee:x.payee||name,bank:x.bank,branch:x.branch||'',ifsc:x.ifsc||'',currency:x.currency||'',isDefault:!!x.isDefault,active:x.active!==false,createdAt:x.createdAt||now(),createdBy:x.createdBy||me().name}))];
+  if(rows.length)audit('Masters','Bank accounts saved',name,rows.length+' account(s) for '+type.toLowerCase());save();render()};
+
+/* payment step: our entity's accounts → insurer's or broker's accounts */
+payForm=function(b){const c=curOf(b),L=acctsOf('Our entity',b.entity),P=[...acctsOf('Insurer',b.insurer).map(x=>[x,'Insurer']),...(b.broker&&b.broker!=='Direct'?acctsOf('Broker',b.broker).map(x=>[x,'Broker']):[])];
+  return `<div class="note i">Payment is approved and made in OMS. Record it here with the bank details; Bond Desk then generates the payment advice for the insurer. The automatic OMS feed is Phase 2.</div>
+  <h3>Paid from (${esc(b.entity)})</h3><div class="grid">${fld('Our bank account <span class="req">*</span>',`<select id="payFrom">${opts(L.map(x=>[x.id,accLabel(x)+(x.isDefault?' (default)':'')]),L[0]?.id,L.length?null:'No account for this entity')}<option value="other">Other (type below)</option></select>`,L.length?'From Masters → Bank accounts.':'Add the entity’s accounts in Masters → Legal entities → Edit.')}
+   ${fld('If other: bank and account','<input id="payFromTxt" placeholder="e.g. HDFC Bank · 50200012345678 · HDFC0000060">')}
+   ${fld('Payment mode','<select id="payMode">'+opts(['RTGS','NEFT','IMPS','SWIFT / wire','Other'],c==='INR'?'RTGS':'SWIFT / wire')+'</select>')}</div>
+  <h3 style="margin-top:12px">Paid to</h3><div class="grid">${fld('Insurer / broker account <span class="req">*</span>',`<select id="payTo">${opts(P.map(([x,t])=>[x.id,t+' · '+x.payee+' · '+accLabel(x)+(x.isDefault?' (default)':'')]),P[0]?.[0].id,P.length?null:'No account for '+b.insurer)}<option value="other">Other (type below)</option></select>`,P.length?'Insurer accounts'+(b.broker&&b.broker!=='Direct'?' and '+esc(b.broker)+' (broker) accounts':'')+' from Masters.':'Add '+esc(b.insurer)+'’s accounts in Masters → Insurers → Edit.')}
+   ${fld('If other: payee, bank, account, IFSC','<input id="payToTxt" placeholder="e.g. ICICI Lombard GIC · HDFC Bank · 00600340012345 · HDFC0000060">','Separate with · or commas')}</div>
+  <h3 style="margin-top:12px">Payment</h3><div class="grid">${fld('UTR number <span class="req">*</span>','<input id="payUtr">')}${fld('Payment date <span class="req">*</span>',`<input type="date" id="payDate" value="${TODAY}">`)}${fld('Amount paid',`<input type="number" id="payAmt" step="any" value="${esc(b.pi?.total??'')}">`,'PI total '+full(b.pi?.total,c))}
+   ${fld('Source of these details','<select id="paySrc">'+opts(['OMS payment confirmation','Bank statement / debit advice','Other'],'OMS payment confirmation')+'</select>','Where Finance took the UTR from.')}</div>
+  <div class="acts" style="margin-top:10px"><button class="btn p" data-a="paySave">Record payment</button></div>`};
+A.paySave=()=>{const b=bond(ui.bond),u=val('payUtr'),d=val('payDate');if(!u||!d)return toast('Enter the UTR and payment date.',1);const sp=t=>t.split(/·|\||,/).map(x=>x.trim());
+  const fid=val('payFrom');let from;if(fid&&fid!=='other'){const x=MA('accounts').find(y=>y.id===fid);from={name:x.payee,bank:x.bank,branch:x.branch||'',account:x.account,ifsc:x.ifsc||''}}else{const t=val('payFromTxt');if(!t)return toast('Choose our bank account, or type it under “If other”.',1);const m=sp(t);from={bank:m[0],account:m[1]||'',ifsc:m[2]||''}}
+  const tid=val('payTo');let payee;if(tid&&tid!=='other'){const x=MA('accounts').find(y=>y.id===tid);payee={name:x.payee,bank:x.bank,account:x.account,ifsc:x.ifsc||'',branch:x.branch||'',type:x.partyType}}else{const t=val('payToTxt');if(!t)return toast('Choose the insurer or broker account, or type it under “If other”.',1);const m=sp(t);payee={name:m[0],bank:m[1]||'',account:m[2]||'',ifsc:m[3]||''}}
+  b.payment={utr:u,date:d,amount:num(val('payAmt')),mode:val('payMode'),from,payee,source:val('paySrc'),at:now(),by:me().name};
+  blog(b,'Payment recorded: '+full(b.payment.amount,curOf(b))+' by '+b.payment.mode+', UTR '+u+' on '+fd(d)+' from '+from.bank+' '+mask(from.account)+' to '+payee.name+' '+mask(payee.account)+' (source: '+b.payment.source+').','Payment');advance(b);save();render();toast('Payment recorded. Open “Payment advice” to share it with the insurer.')};
+</script>
 <script>boot();</script>
 
 </body></html>
