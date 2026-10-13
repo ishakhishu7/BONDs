@@ -970,7 +970,7 @@ function stVerify(b){
   /* d: quote */
   const q=b.quote||{},prem=q.premium??'';
   const dd=subBox('d','Insurer quote',dOK&&b.step!=='verify'?'done':cOK?'cur':'lock',team?`<div class="grid">${fld('Premium rate (%) <span class="req">*</span>',`<input type="number" id="qRate" step="any" min="0" value="${esc(q.rate??'')}" data-in="qRate">`,'Of the bond amount')}${fld('Quoted premium ('+CUR(curOf(b)).symbol+', before GST) <span class="req">*</span>',`<input type="number" id="qPrem" step="any" min="0" value="${esc(prem)}">`)}${fld('Quote date',`<input type="date" id="qDate" value="${esc(q.date||TODAY)}">`)}${fld('Remarks',`<input id="qRm" value="${esc(q.remarks||'')}">`)}</div>
-    <div class="acts" style="margin-top:10px"><button class="btn p" data-a="sendApproval" ${aOK&&bOK&&cOK?'':'disabled'}>Send for internal approval</button><span class="mu">Approver: ${esc(bandLabel(b))}</span></div>`:`<p class="mu">${q.rate!=null?'Quoted '+q.rate+'% = '+full(q.premium,curOf(b))+' + GST':'Bond team records the quote.'}</p>`);
+    <div class="acts" style="margin-top:10px"><button class="btn p" data-a="sendApproval" ${aOK&&bOK&&cOK?'':'disabled'}>${buildChain(b)?'Send for internal approval':'Move to PI and payment'}</button><span class="mu">Approval: ${esc(bandLabel(b))}</span></div>`:`<p class="mu">${q.rate!=null?'Quoted '+q.rate+'% = '+full(q.premium,curOf(b))+' + GST':'Bond team records the quote.'}</p>`);
   return actPanel('Step 2 · Verification and quotation',a+bx+cc+dd,'Owner: Bond team')}
 function bandLabel(b){const band=bandFor(b);if(!band)return 'Any approver';const r=ACCESS.roles.find(x=>x.id===band.role);return (r?r.name:'Approver')+(band.label?' · '+band.label:'')}
 CH.qRate=el=>{const b=bond(ui.bond),r=+el.value;if(r>=0&&b.amount)$('#qPrem').value=Math.round((+b.amount)*r/100)};
@@ -1414,8 +1414,7 @@ VIEWS.settings=()=>{const st=S.settings,ed=can('settings','edit'),dis=ed?'':'dis
    ${sla.on?`<div class="grid" style="padding:4px 0 14px">${STEPS.slice(1).map(s=>fld('Step '+(stepIx(s.k)+1)+' · '+esc(s.l)+' (days)',`<input type="number" min="0" id="sl_${s.k}" data-ch="sSla" data-k="${s.k}" value="${esc(sla.days?.[s.k]??'')}" ${dis}>`)).join('')}</div>`:''}
    <div class="setrow"><div><b>Premium check (quoted premium vs PI)</b><div class="mu">When the insurer’s PI is entered at Step 4, Bond Desk compares its premium with the quote from Step 2. If they differ by more than the tolerance, Finance or the bond team must accept the variance before payment. GST % pre-fills the GST on the PI form, and the Zetwerk GSTIN is printed on the PI preview so you can check the insurer used it.</div></div><div class="grid" style="min-width:min(100%,520px)">${fld('Tolerance (%)',`<input type="number" step="any" min="0" id="sTol" data-ch="sNum" data-k="premTol" value="${esc(st.premTol)}" ${dis}>`)}${fld('GST (%)',`<input type="number" step="any" min="0" id="sGst" data-ch="sNum" data-k="gst" value="${esc(st.gst)}" ${dis}>`)}${fld('Zetwerk GSTIN on PI',`<input id="sGstin" data-ch="sTxt" data-k="gstin" value="${esc(st.gstin||'')}" ${dis}>`)}</div></div>
    <div class="setrow"><div><b>Expiry warning</b><div class="mu">Live bonds expiring within this many days show on the overview.</div></div><div style="width:160px">${fld('Days',`<input type="number" min="1" id="sExp" data-ch="sNum" data-k="expiryWarn" value="${esc(st.expiryWarn)}" ${dis}>`)}</div></div></div>
-  <div class="panel"><div class="row c" style="justify-content:space-between;margin-bottom:8px"><div><h2>Approval matrix · Step 3</h2><span class="mu">The first band that matches the request's currency and amount decides who approves. CFO approver and final bands are still to be confirmed.</span></div>${ed?'<button class="btn p" data-a="apNew">New band</button>':''}</div>
-   ${tbl('<th>Currency</th><th class="n">From</th><th class="n">Up to</th><th>Approver role</th><th>Label</th><th></th>',(st.approval||[]).map(r=>`<tr><td>${esc(r.currency||'INR')}</td><td class="n">${esc(r.min??0)} ${esc(CUR(r.currency).unit)}</td><td class="n">${r.max==null||r.max===''?'No limit':esc(r.max)+' '+esc(CUR(r.currency).unit)}</td><td>${esc(ACCESS.roles.find(x=>x.id===r.role)?.name||'—')}</td><td>${esc(r.label||'')}</td><td><div class="acts" style="flex-wrap:nowrap">${ed?`<button class="btn sm" data-a="apEdit" data-id="${r.id}">Edit</button><button class="btn sm d" data-a="apDel" data-id="${r.id}">Delete</button>`:''}</div></td></tr>`).join(''),'No bands. Anyone with approve permission can approve.')}</div>
+  ${wfPanel()}
   <div class="panel"><div class="row c" style="justify-content:space-between"><h2>Integrations</h2>${pill('Phase 2','wa')}</div>
    <div class="setrow"><div><b>OMS · Bond Desk to OMS</b><div class="mu">Sent when the PI is approved for payment.</div><ul class="mu" style="margin:6px 0 0;padding-left:18px"><li>Bond reference (matching key) and PI number, PI date</li><li>Insurer as vendor, with GSTIN and payee bank details</li><li>Premium, GST, stamp paper, total</li><li>Legal entity, BU and cost centre</li><li>PI file</li></ul></div><label class="toggle"><input type="checkbox" disabled> <span>Phase 2</span></label></div>
    <div class="setrow"><div><b>OMS · OMS back to Bond Desk</b><div class="mu">Fills the payment step on its own instead of Finance typing it.</div><ul class="mu" style="margin:6px 0 0;padding-left:18px"><li>OMS invoice ID and status (submitted, approved, rejected with reason)</li><li>Approver and approval date</li><li>UTR, value date, amount, debit bank account, payment mode</li></ul></div><label class="toggle"><input type="checkbox" disabled> <span>Phase 2</span></label></div>
@@ -1505,7 +1504,120 @@ let inT;document.addEventListener('input',e=>{const el=e.target.closest('[data-i
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if($('#pop'))closePop();else if(inModal())closeModal()}});
 addEventListener('resize',closePop);
 addEventListener('beforeunload',()=>autoSaveDraft());
-boot();
 </script>
+<script>
+/* ============ approval workflows by BU / entity, levels assigned to user groups ============ */
+const GRP=id=>(ACCESS.groups||[]).find(g=>g.id===id);
+const grpName=id=>GRP(id)?.name||'Unknown group';
+const grpHas=(id,uid)=>!!GRP(id)?.members?.includes(uid);
+const MODE_L={any:'Any one member approves',all:'All members must approve'};
+function ensureWf(){if(!S||!ACCESS)return;let ch=false;
+  if(!ACCESS.groups){const by=r=>ACCESS.users.filter(u=>u.active!==false&&hasRole(u,r)).map(u=>u.id);
+    ACCESS.groups=[{id:'g_appr',name:'Approvers',desc:'Level 1 approvers. Any one member can approve.',members:by('r_ck'),createdAt:now()},{id:'g_cso',name:'CSO Admin',desc:'CSO approval for higher amounts.',members:uniq([...by('r_ad'),...by('r_sa')]),createdAt:now()}];ch=true}
+  if(S.settings.approvalOn==null){S.settings.approvalOn=true;
+    S.settings.workflows=[{id:'wf1',name:'Standard bond approval',active:true,bus:MA('bus').map(x=>x.name),entities:[],currency:'INR',createdAt:now(),
+      bands:[{min:0,max:1,levels:[{label:'Approver',group:'g_appr',mode:'any'}]},{min:1,max:null,levels:[{label:'Approver',group:'g_appr',mode:'any'},{label:'CSO Admin',group:'g_cso',mode:'any'}]}]}];ch=true}
+  if(!S.settings.usdWfSeeded){S.settings.usdWfSeeded=true;if(!(S.settings.workflows||[]).some(w=>w.currency==='USD'))(S.settings.workflows=S.settings.workflows||[]).push({id:'wf_usd',name:'International (USD) bond approval',active:true,bus:[],entities:[],kinds:[],currency:'USD',createdAt:now(),
+    bands:[{min:0,max:1,levels:[{label:'Approver',group:'g_appr',mode:'any'}]},{min:1,max:null,levels:[{label:'Approver',group:'g_appr',mode:'any'},{label:'CSO Admin',group:'g_cso',mode:'any'}]}]});ch=true}
+  S.bonds.forEach(b=>{if(b.status==='open'&&b.step==='approval'&&!b.approval?.levels){const c=buildChain(b);if(c){b.approval=c;ch=true}}});
+  if(ch)save()}
+const _renderWf=render;render=function(){if(MODE==='shared'||MODE==='local')ensureWf();_renderWf()};
+const amtU=b=>(+b.amount||0)/(+CUR(curOf(b)).unitVal||1);
+const bandHit=(bd,a)=>(a>(+bd.min||0)||(+bd.min||0)===0&&a>=0)&&(bd.max==null||bd.max===''||a<=+bd.max);
+const bandTxt=(bd,c)=>{const u=CUR(c||'INR').unit;return (+bd.min||0)===0?(bd.max==null||bd.max===''?'Any amount':'Up to '+bd.max+' '+u):(bd.max==null||bd.max===''?'Above '+bd.min+' '+u:'Above '+bd.min+' up to '+bd.max+' '+u)};
+const wfSpec=w=>(w.bus?.length?2:0)+(w.entities?.length?1:0);
+function wfFor(b){return (S.settings.workflows||[]).filter(w=>w.active!==false&&(w.currency||'INR')===curOf(b)&&(!w.bus?.length||w.bus.includes(b.bu))&&(!w.entities?.length||w.entities.includes(b.entity))&&(!w.kinds?.length||w.kinds.includes(b.kind||'new'))).sort((x,y)=>wfSpec(y)-wfSpec(x))[0]||null}
+function buildChain(b){if(!S.settings.approvalOn)return null;const w=wfFor(b);if(!w)return null;const a=amtU(b),bd=(w.bands||[]).find(x=>bandHit(x,a));
+  const lv=bd?bd.levels:[{label:'CSO Admin (no band covers this amount)',group:'g_cso',mode:'any'}];
+  return {wfId:w.id,wfName:w.name,band:bd?bandTxt(bd,w.currency):'No band',levels:lv.map(l=>({label:l.label||grpName(l.group),group:l.group,mode:l.mode||'any',status:'pending',decisions:[]})),cur:0,status:'pending'}}
+function noApprovalWhy(b){if(!S.settings.approvalOn)return 'Approval flow is switched off';return 'No approval workflow for '+(KIND_L[b.kind]||'New bond').toLowerCase()+' · '+(b.bu||'this BU')+(b.entity?' / '+b.entity:'')+' · '+curOf(b)}
+const curLv=b=>b.approval?.levels?.[b.approval.cur];
+bandLabel=function(b){const c=buildChain(b);if(!c)return 'Not required ('+noApprovalWhy(b)+')';return c.wfName+' · '+c.band+' · '+c.levels.map(l=>grpName(l.group)).join(' → ')};
+canApprove=function(b){const u=me(),l=curLv(b);if(!l||b.step!=='approval')return false;if(b.createdBy&&b.createdBy===u.id&&!isSA())return false;if(l.decisions.some(d=>d.uid===u.id&&d.decision==='approved'))return false;return isSA()||grpHas(l.group,u.id)};
+const _pendWf=pending;pending=function(b){const r=_pendWf(b),l=b.status==='open'&&b.step==='approval'?curLv(b):null;if(l)r.forEach(x=>{if(x.who==='approver')x.text='Approval · '+l.label+' ('+grpName(l.group)+')'});return r};
+A.sendApproval=()=>{const b=bond(ui.bond),rate=num(val('qRate')),prem=num(val('qPrem'));if(rate==null||prem==null)return toast('Enter the premium rate and quoted premium.',1);
+  b.quote={rate,premium:prem,date:val('qDate')||TODAY,remarks:val('qRm'),at:now(),by:me().name};const c=buildChain(b);
+  if(!c){b.approval={status:'not required',reason:noApprovalWhy(b),at:now()};setStep(b,'placement');blog(b,'Quote recorded: '+rate+'% = '+full(prem,curOf(b))+' + GST. Internal approval not required ('+noApprovalWhy(b)+'). Moved to placement.');save();render();return toast('No approval needed. Moved to PI and payment.')}
+  b.approval=c;setStep(b,'approval');blog(b,'Quote recorded: '+rate+'% = '+full(prem,curOf(b))+' + GST. Sent for approval: '+c.wfName+' · '+c.band+' · '+c.levels.map(l=>grpName(l.group)).join(' → ')+'.');save();render();toast('Sent for approval to '+grpName(c.levels[0].group)+'.')};
+stApproval=function(b){const c=curOf(b),a=b.approval||{},okA=canApprove(b),l=curLv(b);
+  const chain=(a.levels||[]).map((x,i)=>{const mem=(GRP(x.group)?.members||[]).map(id=>U(id)?.name).filter(Boolean);const st=x.status==='approved'?'done':i===a.cur?'cur':'lock';
+    return `<div class="sub ${st}"><div class="sub-h"><span class="k">${st==='done'?'✓':i+1}</span><b>${esc(x.label)}</b><span class="mu">${esc(grpName(x.group))} · ${esc(MODE_L[x.mode]||'')}</span><span class="sp"></span>${x.status==='approved'?pill('Approved','ok'):i===a.cur?pill('Waiting','wa'):pill('Next','gr')}</div>
+    <div class="sub-b"><div class="mu">Members: ${mem.length?mem.map(esc).join(', '):'<span style="color:var(--er)">No members in this group. Add them in Users and roles → User groups.</span>'}</div>${x.decisions.map(d=>`<div class="mu">${d.decision==='approved'?'Approved':'Rejected'} by <b>${esc(d.who)}</b> · ${fdt(d.t)}${d.comment?' · “'+esc(d.comment)+'”':''}</div>`).join('')}</div></div>`}).join('');
+  const body=`<div class="kv"><div><span>Bond</span><b>${esc(b.type)} · ${money(b.amount,c)}</b></div><div><span>Beneficiary</span><b>${esc(b.beneficiary)}</b></div><div><span>Insurer and route</span><b>${esc(b.insurer)} · ${esc(b.broker||'Direct')}</b></div><div><span>Quote</span><b>${b.quote?.rate}% · ${full(b.quote?.premium,c)} + GST</b></div><div><span>Workflow</span><b>${esc(a.wfName||'')} · ${esc(a.band||'')}</b></div></div>
+   ${b.overLimit?'<div class="note w">Over the insurer\'s recorded line (flag only).</div>':''}${chain}
+   ${okA?`${fld('Comment','<textarea id="apCm" placeholder="Optional for approval, required for rejection"></textarea>')}<div class="acts" style="margin-top:10px"><button class="btn p" data-a="approve">Approve${a.levels.length>1?' · '+esc(l.label):''}</button><button class="btn d" data-a="reject">Reject and return to BU</button></div>`
+     :`<p class="mu">${b.createdBy===me().id&&!isSA()?'You raised this request, so someone else must approve it.':l?'Waiting for a member of '+esc(grpName(l.group))+'.':''}</p>`}`;
+  return actPanel('Step 3 · Internal approval',body,'Level '+((a.cur||0)+1)+' of '+(a.levels||[]).length)};
+A.approve=()=>{const b=bond(ui.bond),a=b.approval,l=curLv(b),cm=val('apCm'),u=me();l.decisions.push({uid:u.id,who:u.name,t:now(),decision:'approved',comment:cm});
+  const mem=GRP(l.group)?.members||[],done=l.mode!=='all'||isSA()||mem.every(id=>l.decisions.some(d=>d.uid===id&&d.decision==='approved'));
+  if(!done){blog(b,'Approved by '+u.name+' ('+l.label+'), waiting for the rest of '+grpName(l.group)+'.','Approval');save();render();return toast('Approval recorded. Other members still need to approve.')}
+  l.status='approved';a.cur++;
+  if(a.cur<a.levels.length){blog(b,'Approved at '+l.label+' by '+u.name+(cm?': '+cm:'')+'. Next: '+a.levels[a.cur].label+' ('+grpName(a.levels[a.cur].group)+').','Approval');save();render();return toast('Approved. Sent to '+grpName(a.levels[a.cur].group)+'.')}
+  a.status='approved';a.at=now();(b.approvals=b.approvals||[]).push(clone(a));setStep(b,'placement');blog(b,'Approved at '+l.label+' by '+u.name+(cm?': '+cm:'')+'. All approval levels complete.','Approval');save();render();toast('Approved. Next: PI, draft bond and payment.')};
+A.reject=()=>{const b=bond(ui.bond),cm=val('apCm'),l=curLv(b),u=me();if(!cm)return toast('Give a reason for rejecting.',1);l.decisions.push({uid:u.id,who:u.name,t:now(),decision:'rejected',comment:cm});l.status='rejected';b.approval.status='rejected';(b.approvals=b.approvals||[]).push(clone(b.approval));
+  b.returned={kind:'reject',at:now(),by:u.name,comment:cm};setStep(b,'request');blog(b,'Rejected at '+l.label+' by '+u.name+' and returned to BU: '+cm+'.','Approval');save();render();toast('Returned to the BU with your comment.')};
+
+/* settings panel */
+function wfPanel(){const st=S.settings,ed=can('settings','edit'),on=!!st.approvalOn,W=st.workflows||[];
+  const covered=MA('bus').map(x=>x.name).map(n=>({n,w:W.filter(w=>w.active!==false&&(!w.bus?.length||w.bus.includes(n)))}));
+  return `<div class="panel"><div class="row c" style="justify-content:space-between;margin-bottom:8px"><div><h2>Approval workflow · Step 3</h2><span class="mu">Who approves a request after the insurer quote. Set per BU and/or entity, by amount, with each level going to a user group.</span></div>
+   <label class="toggle"><input type="checkbox" id="apOn" data-ch="apOn" ${on?'checked':''} ${ed?'':'disabled'}> <b>Approval flow: ${on?'Yes':'No'}</b></label></div>
+   ${!on?'<div class="note i">Approval is off. Every request goes from the insurer quote straight to PI and payment.</div>':`
+   <div class="note i">Only BUs and entities covered by an active workflow need approval. Others go straight from the quote to PI and payment. If a BU has more than one workflow, the most specific one wins (BU + entity, then BU, then entity, then all).</div>
+   <div class="row c" style="justify-content:space-between;margin:6px 0 8px"><h3 style="margin:0">Workflows</h3>${ed?'<button class="btn p" data-a="wfNew">New workflow</button>':''}</div>
+   ${tbl('<th>Workflow</th><th>Business units</th><th>Entities</th><th>Request kinds</th><th>Currency</th><th>Bands and levels</th><th>Status</th><th></th>',W.map(w=>`<tr><td><b>${esc(w.name)}</b></td><td>${w.bus?.length?esc(w.bus.join(', ')):'All BUs'}</td><td>${w.entities?.length?esc(w.entities.join(', ')):'All entities'}</td><td>${w.kinds?.length?esc(w.kinds.map(k=>KIND_L[k]).join(', ')):'All'}</td><td>${esc(w.currency||'INR')}</td>
+     <td>${(w.bands||[]).map(bd=>`<div><b>${esc(bandTxt(bd,w.currency))}:</b> ${bd.levels.map(l=>esc(grpName(l.group))+(l.mode==='all'?' (all)':'')).join(' → ')}</div>`).join('')}</td><td>${w.active!==false?pill('Active','ok'):pill('Off','gr')}</td>
+     <td><div class="acts" style="flex-wrap:nowrap">${ed?`<button class="btn sm" data-a="wfEdit" data-id="${w.id}">Edit</button><button class="btn sm d" data-a="wfDel" data-id="${w.id}">Delete</button>`:''}</div></td></tr>`).join(''),'No workflows yet, so no BU needs approval.')}
+   <h3 style="margin:14px 0 6px">Business units</h3><div class="chips">${covered.map(x=>`<span class="chip" style="cursor:default" title="${x.w.length?'Approval: '+esc(x.w.map(w=>w.name).join(', ')):'No approval'}">${x.w.length?'✓':'—'} ${esc(x.n)}</span>`).join('')}</div><p class="mu" style="margin:0">✓ needs approval · — goes straight to PI and payment.</p>`}</div>`}
+CH.apOn=el=>{S.settings.approvalOn=el.checked;audit('Settings','Approval flow switched '+(el.checked?'on':'off'),'','');save();render();toast('Approval flow: '+(el.checked?'Yes':'No'))};
+const blankWf=()=>({id:uid('wf'),name:'',active:true,bus:[],entities:[],kinds:[],currency:'INR',bands:[{min:0,max:1,levels:[{label:'Approver',group:'g_appr',mode:'any'}]},{min:1,max:null,levels:[{label:'Approver',group:'g_appr',mode:'any'},{label:'CSO Admin',group:'g_cso',mode:'any'}]}]});
+function wfModal(){const w=ui.modal.wf,G=ACCESS.groups||[];
+  modal(`<h2>${ui.modal.isNew?'New':'Edit'} approval workflow</h2><p class="lead">Pick the BUs and/or entities it applies to, then the amount bands. Each band has one or more levels; each level goes to a user group.</p>
+  <div class="grid g2">${fld('Workflow name <span class="req">*</span>',`<input id="wfName" value="${esc(w.name)}" placeholder="e.g. Railways bond approval">`)}${fld('Currency','<select id="wfCur">'+opts(MA('currencies').map(c=>c.code),w.currency)+'</select>','Amounts below are in '+esc(CUR(w.currency).unit)+'.')}
+   ${fld('Business units (none ticked = all BUs)',`<div class="fl" style="max-height:170px">${MA('bus').map(x=>`<label class="ck"><input type="checkbox" class="wfBu" value="${esc(x.name)}" ${w.bus.includes(x.name)?'checked':''}> ${esc(x.name)}</label>`).join('')}</div>`)}
+   ${fld('Legal entities (none ticked = all entities)',`<div class="fl" style="max-height:170px">${MA('entities').map(x=>`<label class="ck"><input type="checkbox" class="wfEnt" value="${esc(x.name)}" ${w.entities.includes(x.name)?'checked':''}> ${esc(x.name)}</label>`).join('')}</div>`)}</div>
+  ${fld('Request kinds (none ticked = all)',`<div class="row c" style="gap:16px">${Object.entries(KIND_L).map(([k,l])=>`<label class="ck"><input type="checkbox" class="wfKind" value="${k}" ${(w.kinds||[]).includes(k)?'checked':''}> ${esc(l)}</label>`).join('')}</div>`,'Extensions and amendments follow the same bands, using the bond amount.')}
+  <label class="toggle" style="margin-top:10px"><input type="checkbox" id="wfAct" ${w.active!==false?'checked':''}> Active</label>
+  <h3 style="margin:16px 0 8px">Amount bands</h3>
+  ${w.bands.map((bd,i)=>`<div class="sub"><div class="sub-h"><b>Band ${i+1}</b><span class="mu">Above</span><input type="number" step="any" id="bmin_${i}" value="${esc(bd.min??0)}" style="width:110px"><span class="mu">up to</span><input type="number" step="any" id="bmax_${i}" value="${esc(bd.max??'')}" placeholder="No limit" style="width:110px"><span class="mu">${esc(CUR(w.currency).unit)}</span><span class="sp"></span><button class="btn sm d" data-a="wfDelBand" data-i="${i}" ${w.bands.length<2?'disabled':''}>Remove band</button></div>
+   <div class="sub-b">${bd.levels.map((l,j)=>`<div class="row c" style="margin-bottom:8px"><b style="width:64px">Level ${j+1}</b><input id="l_${i}_${j}_lbl" value="${esc(l.label)}" placeholder="Label" style="max-width:180px"><select id="l_${i}_${j}_grp" style="max-width:200px">${opts(G.map(g=>[g.id,g.name]),l.group,'Choose group')}</select><select id="l_${i}_${j}_mode" style="max-width:220px">${opts(Object.entries(MODE_L),l.mode)}</select><button class="btn sm d" data-a="wfDelLvl" data-i="${i}" data-j="${j}" ${bd.levels.length<2?'disabled':''}>Remove</button></div>`).join('')}
+   <button class="btn sm" data-a="wfAddLvl" data-i="${i}">Add level</button></div></div>`).join('')}
+  <button class="btn sm" data-a="wfAddBand">Add band</button>
+  <p class="mu" style="margin:10px 0 0">Example: band 1 “Above 0 up to 1 Cr” → Approvers. Band 2 “Above 1 Cr, no limit” → Approvers, then CSO Admin. Exactly ₹1 Cr falls in band 1.</p>
+  <div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="wfSave">Save workflow</button></div>`,true)}
+function syncWf(){const w=ui.modal.wf;w.name=val('wfName');w.currency=val('wfCur')||'INR';w.active=$('#wfAct').checked;w.bus=$$('.wfBu:checked').map(x=>x.value);w.entities=$$('.wfEnt:checked').map(x=>x.value);w.kinds=$$('.wfKind:checked').map(x=>x.value);
+  w.bands.forEach((bd,i)=>{bd.min=num(val('bmin_'+i))||0;bd.max=num(val('bmax_'+i));bd.levels.forEach((l,j)=>{l.label=val(`l_${i}_${j}_lbl`);l.group=val(`l_${i}_${j}_grp`);l.mode=val(`l_${i}_${j}_mode`)||'any'})})}
+A.wfNew=()=>{ui.modal={kind:'wf',wf:blankWf(),isNew:true};wfModal()};
+A.wfEdit=el=>{ui.modal={kind:'wf',wf:clone(S.settings.workflows.find(w=>w.id===el.dataset.id)),isNew:false};wfModal()};
+A.wfAddBand=()=>{syncWf();const w=ui.modal.wf,last=w.bands.at(-1);w.bands.push({min:last?.max??0,max:null,levels:[{label:'Approver',group:'g_appr',mode:'any'}]});wfModal()};
+A.wfDelBand=el=>{syncWf();ui.modal.wf.bands.splice(+el.dataset.i,1);wfModal()};
+A.wfAddLvl=el=>{syncWf();ui.modal.wf.bands[+el.dataset.i].levels.push({label:'',group:'',mode:'any'});wfModal()};
+A.wfDelLvl=el=>{syncWf();ui.modal.wf.bands[+el.dataset.i].levels.splice(+el.dataset.j,1);wfModal()};
+A.wfSave=()=>{syncWf();const w=ui.modal.wf;if(!w.name)return toast('Name the workflow.',1);
+  for(const [i,bd] of w.bands.entries()){if(bd.max!=null&&bd.max<=bd.min)return toast('Band '+(i+1)+': “up to” must be more than “above”.',1);if(bd.levels.some(l=>!l.group))return toast('Band '+(i+1)+': choose a group for every level.',1);bd.levels.forEach(l=>{if(!l.label)l.label=grpName(l.group)})}
+  w.bands.sort((a,b)=>(+a.min||0)-(+b.min||0));const L=S.settings.workflows=S.settings.workflows||[],k=L.findIndex(x=>x.id===w.id);if(k>=0)L[k]=w;else L.push({...w,createdAt:now()});
+  audit('Settings',(k>=0?'Edited':'Created')+' approval workflow',w.name,(w.bus.join(', ')||'All BUs')+' · '+w.bands.map(bd=>bandTxt(bd,w.currency)+': '+bd.levels.map(l=>grpName(l.group)).join(' → ')).join('; '));closeModal();save();render();toast('Workflow saved.')};
+A.wfDel=el=>{const w=S.settings.workflows.find(x=>x.id===el.dataset.id);confirmBox('Delete workflow '+esc(w.name)+'?','BUs only covered by this workflow will no longer need approval. Requests already waiting for approval keep their current approvers.','Delete',()=>{S.settings.workflows=S.settings.workflows.filter(x=>x!==w);audit('Settings','Deleted approval workflow',w.name,'');save();render()},{danger:true})};
+
+/* user groups (under Users and roles) */
+const _usersV=VIEWS.users;
+VIEWS.users=()=>{const G=ACCESS.groups||[],chip=`<button class="chip ${ui.utab==='groups'?'on':''}" data-a="uTab" data-t="groups">User groups<span class="n">${G.length}</span></button>`;
+  if(ui.utab!=='groups'){const h=_usersV();return h.replace('</button></div>','</button>'+chip+'</div>')}
+  const ed=can('users','edit');
+  return `<div class="chips"><button class="chip" data-a="uTab" data-t="users">Users<span class="n">${ACCESS.users.length}</span></button><button class="chip" data-a="uTab" data-t="roles">Roles and permissions<span class="n">${ACCESS.roles.length}</span></button>${chip}</div>
+  <div class="panel"><div class="row c" style="justify-content:space-between;margin-bottom:8px"><div><h2>User groups</h2><span class="mu">Approval levels go to a group. Put several approvers in one group; any one of them can approve (or all, if the level says so).</span></div>${ed?'<button class="btn p" data-a="gNew">New group</button>':''}</div>
+  ${tbl('<th>Group</th><th>What it is for</th><th>Members</th><th>Used in</th><th></th>',G.map(g=>{const used=(S.settings.workflows||[]).filter(w=>w.bands.some(bd=>bd.levels.some(l=>l.group===g.id))).map(w=>w.name);return `<tr><td><b>${esc(g.name)}</b></td><td>${esc(g.desc||'')}</td><td>${(g.members||[]).map(id=>U(id)).filter(Boolean).map(u=>esc(u.name)).join(', ')||'<span style="color:var(--er)">No members</span>'}</td><td>${esc(used.join(', ')||'—')}</td><td><div class="acts" style="flex-wrap:nowrap">${ed?`<button class="btn sm" data-a="gEdit" data-id="${g.id}">Edit</button><button class="btn sm d" data-a="gDel" data-id="${g.id}">Delete</button>`:''}</div></td></tr>`}).join(''),'No groups yet.')}</div>`};
+function gForm(g){ui.modal={kind:'g',id:g?.id||null};modal(`<h2>${g?'Edit':'New'} user group</h2><div class="grid g2">${fld('Group name <span class="req">*</span>',`<input id="gName" value="${esc(g?.name||'')}" placeholder="e.g. Railways approvers">`)}${fld('What it is for',`<input id="gDesc" value="${esc(g?.desc||'')}">`)}
+  ${fld('Members',`<div class="fl" id="gMem" style="max-height:260px">${ACCESS.users.filter(u=>u.active!==false).map(u=>`<label class="ck"><input type="checkbox" value="${u.id}" ${g?.members?.includes(u.id)?'checked':''}> <b>${esc(u.name)}</b> <span class="mu">${esc(roleOf(u).name)}</span></label>`).join('')}</div>`,'','full')}</div>
+  <div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="gSave">Save group</button></div>`)}
+A.gNew=()=>gForm(null);A.gEdit=el=>gForm(GRP(el.dataset.id));
+A.gSave=()=>{const n=val('gName');if(!n)return toast('Name the group.',1);const mem=$$('#gMem input:checked').map(x=>x.value);ACCESS.groups=ACCESS.groups||[];
+  if(ACCESS.groups.some(g=>g.id!==ui.modal.id&&g.name.toLowerCase()===n.toLowerCase()))return toast('A group with that name exists.',1);
+  if(ui.modal.id)Object.assign(GRP(ui.modal.id),{name:n,desc:val('gDesc'),members:mem});else ACCESS.groups.push({id:uid('g_'),name:n,desc:val('gDesc'),members:mem,createdAt:now()});
+  audit('Users',(ui.modal.id?'Edited':'Created')+' user group',n,mem.map(id=>U(id)?.name).join(', '));closeModal();save();render()};
+A.gDel=el=>{const g=GRP(el.dataset.id),used=(S.settings.workflows||[]).some(w=>w.bands.some(bd=>bd.levels.some(l=>l.group===g.id)));if(used)return toast('This group is used in an approval workflow. Change the workflow first.',1);
+  confirmBox('Delete group '+esc(g.name)+'?','Its members keep their user accounts and roles.','Delete group',()=>{ACCESS.groups=ACCESS.groups.filter(x=>x!==g);audit('Users','Deleted user group',g.name,'');save();render()},{danger:true})};
+</script>
+<script>boot();</script>
 
 </body></html>
