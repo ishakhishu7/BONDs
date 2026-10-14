@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Zetwerk Bond Desk</title></head><body>
+<title>Zetwerk Bond Desk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -828,10 +829,10 @@ VIEWS.request=()=>{
        ${fld('Additional days',inp(b,'period.add','number','min="0"'))}
        ${fld('Claim period (days)',inp(b,'period.claimDays','number','min="0"'))}
        ${fld('Bond start',`<input readonly value="${fd(b.start)}">`)}${fld('Bond expiry',`<input readonly value="${fd(b.expiry)}">`,'Submission + validity + condition + additional days')}${fld('Claim expiry',`<input readonly value="${fd(b.claim)}">`,'Expiry + claim period')}`
-     :`${fld('Bond start date <span class="req">*</span>',inp(b,'start','date'))}${fld('Bond expiry date <span class="req">*</span>',inp(b,'expiry','date'))}${fld('Claim-expiry date',inp(b,'claim','date'))}`}</div></div>`;
+     :termBlock(b)}</div></div>`;
   const docs=`<div class="panel"><div class="row c" style="justify-content:space-between"><div><h3 style="margin:0">Documents${b.type?' for '+esc(b.type):''}</h3><span class="mu">Upload each document (any file type, or one zip for many). If a document is not being sent, say why in Remarks.</span></div><div class="acts"><button class="btn" data-a="packUp">Upload zip or several files</button><button class="btn" data-a="addSlot">Add a document</button></div></div>
     <div style="margin-top:10px">${b.reqDocs.length?tbl('<th>Document</th><th>Required</th><th>File</th><th style="min-width:200px">Remarks if not sent</th><th></th>',b.reqDocs.map((d,i)=>`<tr><td><b>${esc(d.name)}</b>${d.owner?`<div class="mu">${esc(d.owner)}</div>`:''}</td><td>${d.mandatory?pill('Mandatory','wa'):pill('Optional','gr')}</td><td>${fileChip(d.file)}${d.file?.contents?`<div class="mu">${d.file.contents.length} files inside</div>`:''}</td><td><input id="sr_${i}" data-ch="slotRemark" data-i="${i}" value="${esc(d.remark||'')}" placeholder="${d.file?'':'Why it is not sent'}" ${d.file?'disabled':''}></td><td><div class="acts"><button class="btn sm" data-a="slotUp" data-i="${i}">${d.file?'Replace':'Upload'}</button>${d.file?`<button class="btn sm d" data-a="slotClear" data-i="${i}">Remove</button>`:''}</div></td></tr>`).join('')):`<p class="mu">${b.type||isChild?'No checklist is set up for this bond type. Add documents, or ask an admin to set it up in Masters.':'Choose the bond type to see its document checklist.'}</p>`}</div>
-    <div class="grid" style="margin-top:14px">${isChild?'':fld('Customer-required wording','<textarea id="f_wd" data-ch="df" data-f="wording">'+esc(b.wording)+'</textarea>','Paste the wording or upload it above as Bond wording.')+fld('Remarks for the bond team','<textarea id="f_rm2" data-ch="df" data-f="remarks">'+esc(b.remarks)+'</textarea>')}</div>
+    <div class="grid" style="margin-top:14px">${isChild?'':fld('Bond wording','<textarea id="f_wd" data-ch="df" data-f="wording">'+esc(b.wording)+'</textarea>','The wording the bond must carry. Paste it here, or upload it above as a document.')+fld('Remarks for the bond team','<textarea id="f_rm2" data-ch="df" data-f="remarks">'+esc(b.remarks)+'</textarea>')}</div>
     <label class="ck" style="margin-top:12px"><input type="checkbox" id="f_cmp" data-ch="df" data-f="complete" ${b.complete?'checked':''}> I confirm the documents above are complete, or I have given a reason for each one not sent.</label></div>`;
   return err+head+(b.status==='draft'?draftsBox:'')+ocr+biz+docs+`<div class="row" style="justify-content:flex-end">${b.status==='draft'?'<button class="btn" data-a="saveDraft">Save draft</button>':''}<button class="btn p" data-a="submitReq">${b.status==='open'?'Resubmit':'Submit request'}</button></div>`};
 AFTER.request=()=>{const d=$('#ocrDrop');if(!d)return;d.addEventListener('dragover',e=>{e.preventDefault();d.classList.add('over')});d.addEventListener('dragleave',()=>d.classList.remove('over'));d.addEventListener('drop',e=>{e.preventDefault();d.classList.remove('over');const f=e.dataTransfer.files[0];if(f)runTenderOCR(f)})};
@@ -1114,7 +1115,7 @@ function details(b){const c=curOf(b);return `<div class="panel"><h2>Request deta
   <div><span>Project status</span><b>${esc(b.projectStatus||'—')}${b.pct?' · '+esc(b.pct)+'%':''}</b></div><div><span>Requirement status</span><b>${esc(b.reqStatus||'—')}</b></div><div><span>Contract value</span><b>${money(b.contractValue,c)}</b></div><div><span>Required by</span><b>${fd(b.requiredBy)}</b></div>
   <div><span>Bond period</span><b>${fd(b.start)} → ${fd(b.expiry)}</b></div><div><span>Claim expiry</span><b>${fd(b.claim)}</b></div>${b.period?.mode==='bid'&&b.period.sub?`<div><span>Bid calculation</span><b>${fd(b.period.sub)} + ${b.period.validityMode==='date'?dBetween(b.period.sub,b.period.validityDate):b.period.validity||0} validity + ${b.period.cond||0} + ${b.period.add||0} days</b></div>`:''}
   ${b.quote?`<div><span>Quote</span><b>${b.quote.rate}% · ${full(b.quote.premium,c)}</b></div>`:''}${b.changes&&b.kind!=='new'?`<div><span>Requested change</span><b>${esc([b.changes.expiry!==bond(b.parentId)?.expiry?'expiry '+fd(b.changes.expiry):'',b.changes.claim?'claim '+fd(b.changes.claim):'',b.kind==='amd'&&b.changes.amount!=null?'amount '+money(b.changes.amount,c):'',b.changes.wording?'wording':''].filter(Boolean).join(' · '))}</b></div>`:''}</div>
-  ${b.remarks?`<div class="note i" style="white-space:pre-wrap">${esc(b.remarks)}</div>`:''}${b.wording?`<details><summary class="mu">Customer wording</summary><p style="white-space:pre-wrap">${esc(b.wording)}</p></details>`:''}
+  ${b.remarks?`<div class="note i" style="white-space:pre-wrap">${esc(b.remarks)}</div>`:''}${b.wording?`<details><summary class="mu">Bond wording</summary><p style="white-space:pre-wrap">${esc(b.wording)}</p></details>`:''}
   ${b.status!=='open'||b.step!=='verify'?`<h3 style="margin-top:12px">Request documents</h3>${tbl('<th>Document</th><th>File</th><th>Remarks</th>',(b.reqDocs||[]).map(d=>`<tr><td>${esc(d.name)}</td><td>${fileChip(d.file)}</td><td>${esc(d.remark||'')}</td></tr>`).join(''),'No documents recorded.')}`:''}</div>`}
 function docLog(b){const rs=b.docReqs||[];if(!rs.length)return '';const rows=[];rs.forEach(r=>r.docs.forEach(d=>{const resp=(r.responses||[]).filter(x=>x.doc===d).slice(-1)[0];rows.push(`<tr><td>${r.pack==='request'?'Request':'Insurer pack'}</td><td><b>${esc(d)}</b></td><td class="w">${fdt(r.at)}</td><td>${esc(r.by)}</td><td>${esc(r.comment||'')}</td><td class="w">${resp?fdt(resp.at):'—'}</td><td>${resp?esc(resp.by):'—'}</td><td>${resp?esc(resp.file):''}</td><td>${r.closedAt?pill(r.outcome||'Closed','ok'):r.submittedAt?pill('Sent back','in'):pill('Waiting for BU','wa')}</td></tr>`)}));
   return `<div class="panel"><h2>Document requests</h2><p class="mu" style="margin:0 0 8px">Which document was asked for, when and by whom, and when it came back and from whom.</p>${tbl('<th>Pack</th><th>Document</th><th>Requested on</th><th>Requested by</th><th>Message</th><th>Received on</th><th>Received from</th><th>File</th><th>Status</th>',rows.reverse().join(''))}</div>`}
@@ -1409,10 +1410,9 @@ A.rDel=el=>{const r=ACCESS.roles.find(x=>x.id===el.dataset.id),n=ACCESS.users.fi
 /* ============ Settings ============ */
 VIEWS.settings=()=>{const st=S.settings,ed=can('settings','edit'),dis=ed?'':'disabled',sla=st.sla||SET_DEF.sla;
   return `<div class="panel"><h2>Features</h2>
-   <div class="setrow"><div><b>Read documents with Claude (OCR)</b><div class="mu">When on, Bond Desk reads documents and fills the form: a tender, NIT or LOA on New request (including scanned LOAs), and the insurer's PI at Step 4, which is then checked against the quote, our GSTIN and the insurer's bank accounts. On claude.ai Claude reads them; elsewhere they are read on the device.</div></div><label class="toggle"><input type="checkbox" id="sOcr" data-ch="sTog" data-k="ocr" ${st.ocr?'checked':''} ${dis}> <span>${st.ocr?'On':'Off'}</span></label></div>
+   <div class="setrow"><div><b>Read documents with Claude (OCR)</b><div class="mu">When on, Bond Desk reads documents and fills the form: a tender, NIT or LOA on New request (including scanned LOAs). Use “Review on document” to see where each field came from, draw a box for anything missed, and save it as a template. On claude.ai Claude reads them; elsewhere they are read on the device.</div></div><label class="toggle"><input type="checkbox" id="sOcr" data-ch="sTog" data-k="ocr" ${st.ocr?'checked':''} ${dis}> <span>${st.ocr?'On':'Off'}</span></label></div>
    <div class="setrow"><div><b>SLA tracking</b><div class="mu">When on, requests that sit at a step longer than the days you set are flagged as overdue.</div></div><label class="toggle"><input type="checkbox" id="sSla" data-ch="sTog" data-k="sla" ${sla.on?'checked':''} ${dis}> <span>${sla.on?'On':'Off'}</span></label></div>
    ${sla.on?`<div class="grid" style="padding:4px 0 14px">${STEPS.slice(1).map(s=>fld('Step '+(stepIx(s.k)+1)+' · '+esc(s.l)+' (days)',`<input type="number" min="0" id="sl_${s.k}" data-ch="sSla" data-k="${s.k}" value="${esc(sla.days?.[s.k]??'')}" ${dis}>`)).join('')}</div>`:''}
-   <div class="setrow"><div><b>Premium check (quoted premium vs PI)</b><div class="mu">When the insurer’s PI is attached at Step 4, Bond Desk compares the net premium with the quote from Step 2. A difference above the tolerance is flagged with the other PI checks, and the CSO must fix it or accept it before payment. GST % is used to work out CGST + SGST or IGST. Our GSTIN is now set per entity in Masters → Legal entities.</div></div><div class="grid" style="min-width:min(100%,520px)">${fld('Tolerance (%)',`<input type="number" step="any" min="0" id="sTol" data-ch="sNum" data-k="premTol" value="${esc(st.premTol)}" ${dis}>`)}${fld('GST (%)',`<input type="number" step="any" min="0" id="sGst" data-ch="sNum" data-k="gst" value="${esc(st.gst)}" ${dis}>`)}</div></div>
    <div class="setrow"><div><b>Expiry warning</b><div class="mu">Live bonds expiring within this many days show on the overview.</div></div><div style="width:160px">${fld('Days',`<input type="number" min="1" id="sExp" data-ch="sNum" data-k="expiryWarn" value="${esc(st.expiryWarn)}" ${dis}>`)}</div></div></div>
   ${wfPanel()}
   <div class="panel"><div class="row c" style="justify-content:space-between"><h2>Integrations</h2>${pill('Phase 2','wa')}</div>
@@ -1734,7 +1734,7 @@ function parseLoaText(t){t=String(t||'').replace(/\s+/g,' ');const g=(re,i=1)=>{
     beneficiary:ben?ben[1].trim():null,customer:ben?ben[2]:null,beneficiary_class:ben&&/Corporation|Nigam|Board|Authority|Govt|Government/i.test(t)?'Public':null,
     project_name:g(/Subject\s*:?\s*(.+?)\s+(?:BIDDING DOCUMENT|Sir,|Dear)/i),tender_ref:g(/Bidding Document No\.?\s*[:\-]?\s*([A-Z0-9][A-Z0-9\/\-]*)/i),
     contract_value_inr:cv,security_percent:pct,security_due_days:+g(/within\s+(\d+)\s*\(?[A-Za-z ]*\)?\s*days of the date of LOA/i)||null,
-    completion_months:+g(/completion of the work is\s+(\d+)\s*Months/i)||null,
+    completion_months:+g(/completion of the work is\s+(\d+)\s*Months/i)||null,defect_liability_months:+g(/defect liability period\s*(?:of|:)?\s*(\d+)\s*months/i)||null,
     bond_type:pbg?'Performance Bond':null,bond_amount_inr:cv&&pct?Math.round(cv*pct/100):null}}
 
 
@@ -1758,7 +1758,7 @@ async function readFields(file,prompt,ruleFn,onStatus){
 
 /* ---------- tender / LoA reading on New request ---------- */
 const OCR_REQ=`You extract details for a surety bond request from an Indian tender document, NIT, Letter of Acceptance (LOA), purchase order or bond wording. Return a JSON object with these keys, using null when the document does not state the value:
-document_type ("tender","loa","po" or "other"), customer (issuing organisation short name, e.g. BPCL), beneficiary (full legal name of the organisation the bond favours), beneficiary_class ("Public" for PSU/government, else "Private"), applicant_name (the contractor / bidder the document is addressed to), project_name, tender_ref (tender / bidding document number), loa_number, loa_date (YYYY-MM-DD), bond_type (one of "Bid Bond","Performance Bond","Advance Bond","Retention Bond","Additional Security Bond"; an LOA asking for a performance guarantee / security deposit is "Performance Bond"), security_percent (number, bond as % of contract value), bond_amount_inr (number in rupees; 1 crore = 10000000), contract_value_inr (number in rupees, excluding GST if stated), security_due_days (days from LOA date to submit the bond), completion_months (number), bid_submission_date (YYYY-MM-DD), bid_validity_days, additional_days, claim_period_days, bond_start, bond_expiry, claim_expiry (YYYY-MM-DD), wording_flags (array: clauses the CSO must check, e.g. "Irrevocable and unconditional", "As per proforma in bidding document", "GCC clause 18 / SCC clause 71"), missing (array: details this document does not state), notes (array: other important points).`;
+document_type ("tender","loa","po" or "other"), customer (issuing organisation short name, e.g. BPCL), beneficiary (full legal name of the organisation the bond favours), beneficiary_class ("Public" for PSU/government, else "Private"), applicant_name (the contractor / bidder the document is addressed to), project_name, tender_ref (tender / bidding document number), loa_number, loa_date (YYYY-MM-DD), bond_type (one of "Bid Bond","Performance Bond","Advance Bond","Retention Bond","Additional Security Bond"; an LOA asking for a performance guarantee / security deposit is "Performance Bond"), security_percent (number, bond as % of contract value), bond_amount_inr (number in rupees; 1 crore = 10000000), contract_value_inr (number in rupees, excluding GST if stated), security_due_days (days from LOA date to submit the bond), completion_months (number, contract completion period), defect_liability_months (number, defect liability / guarantee period after completion, if stated), bid_submission_date (YYYY-MM-DD), bid_validity_days, additional_days, claim_period_days, bond_start, bond_expiry, claim_expiry (YYYY-MM-DD), wording_flags (array: clauses the CSO must check, e.g. "Irrevocable and unconditional", "As per proforma in bidding document", "GCC clause 18 / SCC clause 71"), missing (array: details this document does not state), notes (array: other important points).`;
 function entMatch(name){if(!name)return null;const w=String(name).toLowerCase().replace(/[^a-z0-9 ]/g,' ').split(/\s+/).filter(x=>x.length>2&&!['private','limited','pvt','ltd','the','and','m/s'].includes(x));return MA('entities').find(e=>w.length&&w.slice(0,2).every(x=>e.name.toLowerCase().includes(x)))||MA('entities').find(e=>w[0]&&e.name.toLowerCase().includes(w[0]))||null}
 runTenderOCR=async function(file){
   if(!S.settings.ocr)return toast('Document reading is switched off in Settings.',1);
@@ -1776,7 +1776,7 @@ runTenderOCR=async function(file){
     if(x.loa_date&&x.security_due_days)set('requiredBy',addDays(x.loa_date,x.security_due_days));
     if(b.type&&(x.document_type==='loa'||x.document_type==='po')&&!b.projectStatus){const ps=psFor(b.type).find(s=>/award/i.test(s));if(ps){b.projectStatus=ps;XF.add('projectStatus')}}
     if(x.bid_submission_date)set('period.sub',x.bid_submission_date);if(x.bid_validity_days!=null){b.period.validityMode='days';set('period.validity',x.bid_validity_days)}if(x.additional_days!=null)set('period.add',x.additional_days);if(x.claim_period_days!=null)set('period.claimDays',x.claim_period_days);
-    if(b.period.mode==='bid')calcPeriod(b);else{set('start',x.bond_start||(x.document_type==='loa'?x.loa_date&&addDays(x.loa_date,x.security_due_days||0):null));set('expiry',x.bond_expiry);set('claim',x.claim_expiry)}
+    if(b.period.mode==='bid')calcPeriod(b);else loaTerm(b,x,set);
     const slot=b.reqDocs.find(d=>/loa|po/i.test(d.name)&&x.document_type!=='tender')||b.reqDocs.find(d=>/tender/i.test(d.name));if(slot&&!slot.file)slot.file=fileMeta(file);
     const notes=[...(x.notes||[]),x.loa_number?'LOA '+x.loa_number+(x.loa_date?' dated '+fd(x.loa_date):''):null,x.security_percent?'Bond = '+x.security_percent+'% of contract value'+(x.security_due_days?', due within '+x.security_due_days+' days of LOA':''):null,x.completion_months?'Completion: '+x.completion_months+' months':null].filter(Boolean);
     if(notes.length)b.remarks=[b.remarks,...notes.map(n=>'• '+n)].filter(Boolean).join('\n');
@@ -1965,15 +1965,268 @@ VIEWS.reading=()=>{const R=allReads(),done=R.filter(l=>l.outcome),pend=R.filter(
   return `<div class="stats"><div class="stat"><small>Documents read</small><strong>${R.length}</strong><span class="s2">${done.length} checked · ${pend.length} not saved yet</span></div>
    <div class="stat"><small>Field accuracy</small><strong>${T.acc==null?'—':T.acc.toFixed(0)+'%'}</strong><span class="s2">${T.correct} of ${T.n} fields read right first time</span></div>
    <div class="stat"><small>Fields corrected</small><strong>${T.corrected}</strong><span class="s2">${T.missed} missed (left empty, filled by hand)</span></div>
-   <button class="stat" data-a="toLabels"><small>PI labels taught</small><strong>${MA('piLabels').length}</strong><span class="s2">Open Masters → PI reading labels</span></button></div>
+   <button class="stat" data-a="toLabels"><small>Document templates</small><strong>${MA('docTemplates').length}</strong><span class="s2">Open Masters → Document templates</span></button></div>
   <div class="panel"><h2>How this is measured</h2><p class="mu" style="margin:0">Each time a document is read, Bond Desk keeps what it found. When the PI is saved (or the request submitted), it compares that with what was saved: unchanged = <b>correct</b>, changed = <b>corrected</b>, empty but filled by hand = <b>missed</b>. Fields that were empty both times are not counted.</p></div>
   <div class="ov2"><div class="panel"><h2>By field</h2>${tb('<th>Document</th><th>Field</th><th class="n">Correct</th><th class="n">Corrected</th><th class="n">Missed</th><th>Accuracy</th>',FR.map(r=>`<tr><td>${esc(r.doc)}</td><td>${esc(fieldName(r.doc,r.k))}</td><td class="n">${r.correct}</td><td class="n">${r.corrected}</td><td class="n">${r.missed}</td><td>${accCell(r)}</td></tr>`).join(''))}</div>
   <div><div class="panel"><h2>By insurer (PIs)</h2>${tb('<th>Insurer</th><th class="n">PIs</th><th>Accuracy</th><th class="n">Labels</th>',groupTally(done.filter(l=>l.doc==='PI'),l=>l.insurer).map(x=>`<tr><td>${esc(x.k)}</td><td class="n">${x.docs}</td><td>${accCell(x.c)}</td><td class="n">${labelsFor(x.k).length}</td></tr>`).join(''))}</div>
   <div class="panel"><h2>By method</h2>${tb('<th>Method</th><th class="n">Documents</th><th>Accuracy</th>',groupTally(done,l=>l.via).map(x=>`<tr><td>${esc(x.k)}</td><td class="n">${x.docs}</td><td>${accCell(x.c)}</td></tr>`).join(''))}
    <p class="mu" style="margin:8px 0 0">Claude = read on claude.ai. On device = read in the browser (Render). Scan = page images turned into text first.</p></div></div></div>
   <div class="panel">${ftBar(TL,'Search reads',can('audit','export')?'<button class="btn" data-a="readXl">Export to Excel</button>':'')}<div class="tw"><table><thead><tr>${ftHead(TL)}</tr></thead><tbody>${rows.map(l=>`<tr><td class="w">${fdt(l.t)}</td><td>${esc(l.doc)}</td><td class="w"><button class="btn link" data-a="openBond" data-id="${l.b.id}">${esc(l.b.ref||'Draft')}</button></td><td>${esc(l.insurer||'')}</td><td>${esc(l.via)}</td><td>${esc(l.file)}</td><td class="n">${l.outcome?accCell(tally([l])):''}</td><td>${esc(TL.cols[7].g(l))}</td><td>${l.outcome?pill('Checked','ok'):pill('Not saved yet','gr')}</td></tr>`).join('')||'<tr><td colspan="9" class="empty">No reads yet. Attach a PI at Step 4, or read an LOA on New request.</td></tr>'}</tbody></table></div></div>`};
-A.toLabels=()=>{ui.mst='piLabels';go('masters')};
+A.toLabels=()=>{ui.mst='docTemplates';go('masters')};
 A.readXl=()=>{const rows=ftRows(TBL.reads);xlsxOut('Reading_accuracy_'+TODAY+'.xlsx',[['Reads',[TBL.reads.cols.map(c=>c.l),...rows.map(l=>TBL.reads.cols.map(c=>c.g(l)))]],['Fields',[['Read on','Document','Bond','Insurer','Method','Field','Read','Result'],...rows.flatMap(l=>Object.entries(l.outcome||{}).map(([k,o])=>[l.t,l.doc,l.b.ref||'',l.insurer||'',l.via,fieldName(l.doc,k),String(l.read[k]??''),o]))]]])};
+</script>
+<script>
+/* ============ v19 ============ */
+/* ---------- bond period for every non-bid type: start + validity (months/days/date) + claim (months/days/date) ---------- */
+const addMonths=(d,n)=>{if(!d)return '';const x=new Date(String(d).slice(0,10)+'T00:00');if(isNaN(x))return '';const day=x.getDate();x.setDate(1);x.setMonth(x.getMonth()+(+n||0));const last=new Date(x.getFullYear(),x.getMonth()+1,0).getDate();x.setDate(Math.min(day,last));return iso(x)};
+const addBy=(d,mode,v)=>mode==='months'?addMonths(d,v):addDays(d,v);
+function termInit(b){const p=b.period;if(p.mode==='term')return;const t=typeOf(b.type);
+  Object.assign(p,{mode:'term',start:b.start||'',vMode:b.expiry?'date':'months',vVal:'',vDate:b.expiry||'',cMode:b.claim?'date':'days',cVal:t?.claimDays??'',cDate:b.claim||''})}
+const _calc19=calcPeriod;calcPeriod=function(b){const p=b.period;if(!p)return;if(p.mode!=='term')return _calc19(b);
+  b.start=p.start||'';b.expiry=!p.start?'':p.vMode==='date'?(p.vDate||''):(p.vVal===''||p.vVal==null?'':addBy(p.start,p.vMode,p.vVal));
+  b.claim=!b.expiry?'':p.cMode==='date'?(p.cDate||''):(p.cVal===''||p.cVal==null?b.expiry:addBy(b.expiry,p.cMode,p.cVal))};
+const _tc19=typeChanged;typeChanged=function(b){_tc19(b);if(b.period.mode!=='bid'){b.period.mode='manual';termInit(b);calcPeriod(b)}};
+const modeChips=(key,cur)=>`<div class="seg" style="margin:0 0 6px">${[['months','Months'],['days','Days'],['date','Till a date']].map(([v,l])=>`<button class="chip ${cur===v?'on':''}" data-a="pMode" data-k="${key}" data-v="${v}">${l}</button>`).join('')}</div>`;
+function termBlock(b){termInit(b);const p=b.period;
+  return `${fld('Bond start date <span class="req">*</span>',inp(b,'period.start','date'),'Usually the bond issue date, or the LOA / contract date.')}
+   <div class="fld"><label>Bond validity <span class="req">*</span></label>${modeChips('vMode',p.vMode)}${p.vMode==='date'?inp(b,'period.vDate','date'):inp(b,'period.vVal','number','min="0" placeholder="'+(p.vMode==='months'?'Months':'Days')+'"')}</div>
+   <div class="fld"><label>Claim period</label>${modeChips('cMode',p.cMode)}${p.cMode==='date'?inp(b,'period.cDate','date'):inp(b,'period.cVal','number','min="0" placeholder="'+(p.cMode==='months'?'Months':'Days')+'"')}</div>
+   ${fld('Bond expiry',`<input readonly value="${fd(b.expiry)}">`,'Start + validity')}${fld('Claim expiry',`<input readonly value="${fd(b.claim)}">`,'Expiry + claim period')}${fld('Bond length',`<input readonly value="${b.start&&b.claim?dBetween(b.start,b.claim)+' days to claim expiry':''}">`)}`}
+A.pMode=el=>{const b=ui.draft;if(!b)return;b.period[el.dataset.k]=el.dataset.v;calcPeriod(b);keepDraft(b);const y=scrollY;render();scrollTo(0,y)};
+function loaTerm(b,x,set){termInit(b);const p=b.period,months=(+x.completion_months||0)+(+x.defect_liability_months||0);
+  const st=x.bond_start||x.loa_date;if(st){p.start=st;XF.add('period.start')}
+  if(x.bond_expiry){p.vMode='date';p.vDate=x.bond_expiry;XF.add('period.vDate')}else if(months){p.vMode='months';p.vVal=months;XF.add('period.vVal')}
+  if(x.claim_expiry){p.cMode='date';p.cDate=x.claim_expiry;XF.add('period.cDate')}else if(x.claim_period_days!=null){p.cMode='days';p.cVal=x.claim_period_days;XF.add('period.cVal')}
+  calcPeriod(b);if(months&&!x.bond_expiry)b.remarks=[b.remarks,'• Bond validity '+months+' months from '+fd(st)+' (completion '+(x.completion_months||0)+(x.defect_liability_months?' + defect liability '+x.defect_liability_months:'')+' months). Check against the contract.'].filter(Boolean).join('\n')}
+const _re19=reqErrors;reqErrors=function(b){const e=_re19(b);if(b.kind==='new'&&b.period?.mode==='term'){const i=e.indexOf('Bond expiry date');if(i>=0)e[i]='Bond validity'}return e};
+
+/* ---------- Step 4: PI for reference · payment (BU) · draft bond discussion (CSO) ---------- */
+stPlacement=function(b){const c=curOf(b),mk=isMaker(b),team=can('placement','edit')||can('verify','edit'),cso=can('verify','edit'),pay=b.payment,D=draftRounds(b),last=D.at(-1),fin2=draftFinal(b);
+  const pi=b.pi||{};const a=subBox('a','Proforma invoice (PI) · for reference',pi.file?'done':'cur',`<p class="mu" style="margin:0 0 8px">The PI is paid by the business outside Bond Desk. Attach it here for the record.</p><div class="acts">${pi.file?fileChip(pi.file)+`<span class="mu">${fdt(pi.file.at)} · ${esc(pi.file.by||'')}</span>`:'<span class="mu">No PI attached yet.</span>'}${(mk||team)&&!pay?`<button class="btn sm ${pi.file?'':'p'}" data-a="piRef">${pi.file?'Replace PI':'Attach PI'}</button>`:''}</div>`);
+  const bx=subBox('b','Payment details from BU',pay?'done':'cur',pay?`<div class="kv"><div><span>Payment date</span><b>${fd(pay.date)}</b></div><div><span>Amount paid</span><b>${full(pay.amount,c)}</b></div><div><span>UTR</span><b class="mono">${esc(pay.utr)}</b></div><div><span>Recorded by</span><b>${esc(pay.by)} · ${fdt(pay.at)}</b></div></div>${(mk||cso)&&!fin2?'<button class="btn sm" data-a="payEdit">Edit</button>':''}`
+    :mk||isSA()?`<div class="grid">${fld('Payment date <span class="req">*</span>',`<input type="date" id="payDate" value="${TODAY}">`)}${fld('Amount paid <span class="req">*</span>',`<input type="number" id="payAmt" step="any" min="0" value="${esc(pi.total??b.quote?.premium??'')}">`,b.quote?'Quoted premium '+full(b.quote.premium,c)+' + GST':'')}${fld('UTR number <span class="req">*</span>','<input id="payUtr">')}</div><div class="acts" style="margin-top:10px"><button class="btn p" data-a="paySave">Save payment details</button></div>`
+    :'<p class="mu">Waiting for the BU to enter the payment date, amount and UTR.</p>');
+  const rows=D.map(r=>`<tr><td><b>Draft v${r.v}</b></td><td>${fileChip(r.file)}${r.note?`<div class="mu">${esc(r.note)}</div>`:''}</td><td class="w">${fdt(r.at)}<div class="mu">${esc(r.by)}</div></td><td>${r.review?(r.review.decision==='final'?pill('Confirmed as final','ok'):pill('Comments sent','wa'))+`<div class="mu">${esc(r.review.by)} · ${fdt(r.review.at)}</div>${r.review.comment?`<div>${esc(r.review.comment)}</div>`:''}${r.review.file?fileChip(r.review.file):''}`:pill('Under review','in')}</td></tr>`).join('');
+  const cbody=`<p class="mu" style="margin:0 0 8px">After payment, the insurer shares the draft bond. The CSO checks the format and wording and sends comments until the final draft is confirmed. Then the insurer issues the original bond.</p>
+    ${D.length?tbl('<th>Round</th><th>Draft from insurer</th><th>Received</th><th>CSO review</th>',rows):''}
+    ${fin2?'<div class="note o" style="margin-top:10px">Final draft confirmed. Waiting for the insurer to issue the original bond (Step 5).</div>':cso?(!last||last.review?`<div class="acts" style="margin-top:10px"><button class="btn p" data-a="drUp">Upload draft v${D.length+1} from insurer</button></div>`:`<div class="grid" style="margin-top:10px">${fld('Comments on draft v'+last.v,'<textarea id="drCm" placeholder="Wording or format changes for the insurer"></textarea>','','full')}</div><div class="acts" style="margin-top:8px"><button class="btn" data-a="drMark">Attach marked-up copy</button><span class="mu" id="drMk">${ui.drMk?esc(ui.drMk.name):''}</span><span class="sp"></span><button class="btn" data-a="drChanges">Send comments to insurer</button><button class="btn p" data-a="drFinal">Confirm as final draft</button></div>`):'<p class="mu">The CSO reviews the draft with the insurer.</p>'}`;
+  const cx=subBox('c','Draft bond · discussion with insurer',fin2?'done':pay?'cur':'lock',cbody);
+  return actPanel('Step 4 · PI, payment and draft bond',`<div class="row c" style="justify-content:space-between;margin-bottom:10px"><span class="mu">Insurer: <b>${esc(b.insurer)}</b> · route: <b>${esc(b.broker||'Direct')}</b></span>${cso&&!pay?'<button class="btn sm" data-a="brkChg">Change route / broker</button>':''}</div>`+a+bx+cx,'Owners: BU · CSO')};
+A.piRef=async()=>{const b=bond(ui.bond);const f=await pickFiles(false);if(!f[0])return;b.pi={...(b.pi||{}),file:fileMeta(f[0]),at:now(),by:me().name};blog(b,'PI attached for reference: '+f[0].name+'.','Payment');save();render()};
+A.paySave=()=>{const b=bond(ui.bond),d=val('payDate'),a=num(val('payAmt')),u=val('payUtr');if(!d||a==null||!u)return toast('Enter the payment date, amount and UTR.',1);
+  b.payment={date:d,amount:a,utr:u,at:now(),by:me().name};ui.payEdit=false;blog(b,'Payment details entered: '+full(a,curOf(b))+' on '+fd(d)+', UTR '+u+'.','Payment');advance(b);save();render();toast('Payment saved. The CSO now discusses the draft bond with the insurer.')};
+A.payEdit=()=>{const b=bond(ui.bond),p=b.payment;ui.modal={kind:'pay'};modal(`<h2>Edit payment details</h2><div class="grid">${fld('Payment date',`<input type="date" id="peDate" value="${esc(p.date)}">`)}${fld('Amount paid',`<input type="number" id="peAmt" step="any" value="${esc(p.amount)}">`)}${fld('UTR',`<input id="peUtr" value="${esc(p.utr)}">`)}${fld('Reason for the change <span class="req">*</span>','<input id="peWhy">','','full')}</div><div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="payEditGo">Save</button></div>`)};
+A.payEditGo=()=>{const b=bond(ui.bond),w=val('peWhy');if(!w)return toast('Give a reason for the change.',1);const o=b.payment;b.payment={...o,date:val('peDate'),amount:num(val('peAmt')),utr:val('peUtr'),editedAt:now(),editedBy:me().name};closeModal();blog(b,'Payment details changed ('+w+'): '+[o.date!==b.payment.date?'date '+fd(o.date)+' → '+fd(b.payment.date):'',+o.amount!==+b.payment.amount?'amount '+full(o.amount,curOf(b))+' → '+full(b.payment.amount,curOf(b)):'',o.utr!==b.payment.utr?'UTR '+o.utr+' → '+b.payment.utr:''].filter(Boolean).join(', ')+'.','Payment');save();render()};
+advance=function(b){if(b.step==='placement'&&b.payment&&draftFinal(b)){setStep(b,'issue');blog(b,'Payment done and final draft confirmed. Waiting for the original bond.')}};
+const _pend19=pending;pending=function(b){if(!(b.status==='open'&&b.step==='placement'))return _pend19(b);const D=draftRounds(b),last=D.at(-1);
+  if(!b.payment)return [{who:'maker',text:'Enter payment date, amount and UTR'+(b.pi?.file?'':' (and attach the PI)')}];
+  if(!draftFinal(b))return [{who:'team',text:!last||last.review?'Waiting for draft v'+(D.length+1)+' from insurer':'Review draft v'+last.v}];return []};
+moneyPanel=function(b){if(b.step==='placement'&&b.status==='open')return '';if(!b.quote&&!b.pi?.file&&!b.payment)return '';const c=curOf(b),p=b.payment;
+  return `<div class="panel"><h2>Premium and payment</h2><div class="kv">${b.quote?`<div><span>Quote</span><b>${b.quote.rate}% · ${full(b.quote.premium,c)} + GST</b></div>`:''}${b.pi?.file?`<div><span>PI (reference)</span><b>${fileChip(b.pi.file)}</b></div>`:''}${p?`<div><span>Payment date</span><b>${fd(p.date)}</b></div><div><span>Amount paid</span><b>${full(p.amount,c)}</b></div><div><span>UTR</span><b class="mono">${esc(p.utr)}</b></div>`:''}</div></div>`};
+docsPanel=function(b){const L=docsOf(b);return `<div class="panel"><h2>Documents</h2><span class="mu">Every document on this request, by step.</span>
+  <div style="margin-top:10px">${tbl('<th>Step</th><th>Document</th><th>File</th><th>Uploaded</th><th>By</th>',L.map(x=>`<tr><td class="w">${esc(x.stage)}</td><td>${esc(x.doc)}</td><td>${x.f?fileChip(x.f)+(x.f.contents?`<div class="mu">${x.f.contents.length} files inside</div>`:''):'<span class="mu">Not sent · '+esc(x.remark)+'</span>'}</td><td class="w">${x.f?.at?fdt(x.f.at):'—'}</td><td>${esc(x.f?.by||'')}</td></tr>`).join(''),'No documents uploaded yet.')}</div></div>`};
+const _docsOf19=docsOf;docsOf=function(b){return _docsOf19(b).map(x=>x.stage==='4 · PI'?{...x,doc:'Proforma invoice (reference)'}:x)};
+delete MDEF.piLabels;
+
+/* ---------- change route / broker (CSO admin, until payment) ---------- */
+A.brkChg=()=>{const b=bond(ui.bond),i=insOf(b.insurer)||{},routes=['Direct',...(i.brokers||[])];ui.modal={kind:'brk'};
+  modal(`<h2>Change route / broker</h2><p class="lead">${esc(b.insurer)} · now ${esc(b.broker||'Direct')}. Allowed until payment is recorded.</p><div class="grid">${fld('New route','<select id="brkTo">'+opts(routes,b.broker||'Direct')+'</select>')}${fld('Reason <span class="req">*</span>','<input id="brkWhy">','','full')}</div><div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="brkGo">Change</button></div>`)};
+A.brkGo=()=>{const b=bond(ui.bond),to=val('brkTo'),w=val('brkWhy');if(!w)return toast('Give a reason.',1);if(to===(b.broker||'Direct')){closeModal();return}const old=b.broker||'Direct';b.broker=to;closeModal();blog(b,'Route changed by CSO: '+old+' → '+to+'. Reason: '+w+'.');save();render();toast('Route changed to '+to+'.')};
+const _pgl19=pgLine;pgLine=function(b,team){return _pgl19(b,team)+(can('verify','edit')&&b.insurer&&!b.payment?` <div class="acts" style="margin-top:6px"><button class="btn sm" data-a="brkChg">Change route / broker</button></div>`:'')};
+
+/* ---------- review on document: where each field came from, draw a box to fill a field, save as a template ---------- */
+const RVF=[['cust','Customer','text'],['beneficiary','Beneficiary','text'],['tenderRef','Tender / contract ref','code'],['project','Project name','text'],['amount','Bond amount','amount'],['contractValue','Contract value','amount'],['requiredBy','Required by','date'],['period.start','Bond start','date'],['period.vVal','Validity (months/days)','number'],['period.vDate','Validity till','date']];
+let LASTFILE=null;
+const _rt19=runTenderOCR;runTenderOCR=async function(file){LASTFILE=file;await _rt19(file);const b=ui.draft;if(!b)return;const t=matchTemplate(LASTTEXT);if(t){const n=await applyTemplate(b,t,file);if(n){ui.ocr+=`<div style="margin-top:6px">Template <b>${esc(t.name)}</b> filled ${n} more field(s).</div>`;keepDraft(b);render()}}
+  if(ui.ocr&&!/data-a="rvOpen"/.test(ui.ocr))ui.ocr+=`<div style="margin-top:8px"><button class="btn sm p" data-a="rvOpen">Review on document</button> <span class="mu">See where each field came from, and draw a box for anything missed.</span></div>`;render()};
+const TPL=()=>MA('docTemplates');
+function matchTemplate(text){const t=String(text||'').toLowerCase();if(!t)return null;return TPL().find(x=>x.matchText&&t.includes(String(x.matchText).toLowerCase()))||null}
+MDEF.docTemplates={l:'Document templates',d:'Saved from “Review on document”: where each field sits on a document format (e.g. a customer’s LOA). Applied automatically when the match text is found, or picked on the review screen.',
+  f:[['name','Template name','text',1],['docType','Document type','sel',1,()=>['LOA','Tender','PO','Other']],['matchText','Match text (found on every document of this format)','text'],['zonesTxt','Fields mapped','text']],used:()=>0};
+const _mf19=mForm;mForm=function(rec){_mf19(rec);if(ui.mst==='docTemplates'){const z=$('#mf_zonesTxt');if(z){z.readOnly=true;z.value=(rec?.zones||[]).map(x=>RVF.find(f=>f[0]===x.field)?.[1]||x.field).join(', ')}}};
+const valOf=(raw,type)=>{const s=String(raw||'').replace(/\s+/g,' ').trim();if(!s)return null;if(type==='amount'){const m=s.match(/[\d,]+(?:\.\d+)?/g);if(!m)return null;const n=m.map(x=>+x.replace(/,/g,'')).sort((a,b)=>b-a)[0];return n}
+  if(type==='number'){const m=s.match(/\d+(?:\.\d+)?/);return m?+m[0]:null}if(type==='date'){return dmyIso(s)||(/^\d{4}-\d{2}-\d{2}$/.test(s)?s:null)}if(type==='code'){const m=s.match(/[A-Z0-9][A-Z0-9.&\/\-]{3,}/i);return m?m[0]:s}return s};
+async function pdfPages(file,max){if(!window.pdfjsLib){await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js'}
+  const isImg=(file.type||'').startsWith('image/');if(isImg){const img=new Image();img.src=URL.createObjectURL(file);await img.decode();const cv=document.createElement('canvas');cv.width=img.naturalWidth;cv.height=img.naturalHeight;cv.getContext('2d').drawImage(img,0,0);return [{cv,items:[],w:cv.width,h:cv.height}]}
+  const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise,out=[];
+  for(let i=1;i<=Math.min(pdf.numPages,max||4);i++){const pg=await pdf.getPage(i),vp=pg.getViewport({scale:1.6}),cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;await pg.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+    const tc=await pg.getTextContent(),items=tc.items.filter(t=>t.str.trim()).map(t=>{const m=pdfjsLib.Util.transform(vp.transform,t.transform),h=Math.hypot(m[2],m[3]);return {s:t.str,x:m[4],y:m[5]-h,w:t.width*vp.scale,h}});out.push({cv,items,w:cv.width,h:cv.height})}return out}
+function findBox(pages,value,type){if(value==null||value==='')return null;const vs=type==='amount'||type==='number'?valVariants(value,'amount'):type==='date'?valVariants(value,'date'):[String(value)];
+  for(let p=0;p<pages.length;p++){const it=pages[p].items;for(const v of vs){const lv=String(v).toLowerCase().slice(0,40);if(lv.length<2)continue;for(let i=0;i<it.length;i++){let acc='',x0=it[i].x,y0=it[i].y,x1=it[i].x+it[i].w,y1=it[i].y+it[i].h;for(let j=i;j<Math.min(it.length,i+8);j++){acc+=(j>i?' ':'')+it[j].s;x0=Math.min(x0,it[j].x);y0=Math.min(y0,it[j].y);x1=Math.max(x1,it[j].x+it[j].w);y1=Math.max(y1,it[j].y+it[j].h);
+      const la=acc.toLowerCase().replace(/\s+/g,' ');if(la.includes(lv))return {p,x:x0,y:y0,w:x1-x0,h:y1-y0};if(la.length>lv.length+60)break}}}}return null}
+async function zoneText(page,r){const inside=page.items.filter(t=>t.x+t.w/2>=r.x&&t.x+t.w/2<=r.x+r.w&&t.y+t.h/2>=r.y&&t.y+t.h/2<=r.y+r.h).sort((a,b)=>Math.abs(a.y-b.y)>4?a.y-b.y:a.x-b.x);if(inside.length)return {text:inside.map(t=>t.s).join(' '),via:'text'};
+  const cv=document.createElement('canvas'),sc=2;cv.width=Math.max(20,r.w*sc);cv.height=Math.max(20,r.h*sc);cv.getContext('2d').drawImage(page.cv,r.x,r.y,r.w,r.h,0,0,cv.width,cv.height);
+  const sample=await getSample();if(sample){try{const bl=await new Promise(res=>cv.toBlob(res,'image/png'));const out=await sample('Transcribe the text in this image exactly. Return only the text.',{images:[bl]});return {text:out.text||'',via:'Claude'}}catch(e){}}
+  try{return {text:await ocrCanvases([cv]),via:'device OCR'}}catch(e){return {text:'',via:'none'}}}
+async function applyTemplate(b,t,file){let pages;try{pages=await pdfPages(file,4)}catch(e){return 0}let n=0;for(const z of t.zones||[]){const pg=pages[z.p];if(!pg)continue;const cur=getPath(b,z.field);if(cur!=null&&cur!=='')continue;const f=RVF.find(x=>x[0]===z.field);if(!f)continue;
+  const r={x:z.x*pg.w,y:z.y*pg.h,w:z.w*pg.w,h:z.h*pg.h};const {text}=await zoneText(pg,r);const v=valOf(text,f[2]);if(v!=null&&v!==''){setPath(b,z.field,v);XF.add(z.field);n++}}
+  if(n){if(b.period?.mode==='term'&&(XF.has('period.vVal')||XF.has('period.vDate'))){if(XF.has('period.vDate'))b.period.vMode='date';else if(b.period.vMode==='date')b.period.vMode='months'}calcPeriod(b)}return n}
+A.rvOpen=async()=>{const b=ui.draft;if(!b||!LASTFILE)return toast('Read a document first.',1);ui.modal={kind:'rv',busy:true};modal('<h2>Review on document</h2><p class="lead"><span class="spin"></span> Preparing the document…</p>',true);
+  let pages;try{pages=await pdfPages(LASTFILE,4)}catch(e){closeModal();return toast('Could not open the document for review.',1)}ui.rv={pages,zones:{},sel:null,drawing:null};rvRender()};
+function rvRender(){const b=ui.draft,R=ui.rv;if(!R)return;const scan=!R.pages.some(p=>p.items.length);
+  const rows=RVF.map(([k,l,ty])=>{const v=getPath(b,k);const box=R.zones[k]?{...R.zones[k],src:'drawn'}:findBox(R.pages,v,ty);R[k]=box;const st=v==null||v===''?pill('Empty','er'):box?pill(R.zones[k]?'From your box':'Found on page '+(box.p+1),'ok'):pill(scan?'Read · no position (scan)':'Not found on page','wa');
+    return `<tr class="${R.sel===k?'sel':''}"><td><b>${esc(l)}</b><div>${st}</div></td><td><input id="rv_${k.replace('.','_')}" data-rk="${k}" value="${esc(v??'')}"></td><td class="w">${box?`<button class="btn sm" data-a="rvShow" data-k="${k}">Show</button>`:''}<button class="btn sm ${v==null||v===''?'p':''}" data-a="rvDraw" data-k="${k}">Draw box</button></td></tr>`}).join('');
+  const t=TPL();
+  modal(`<h2>Review on document</h2><p class="lead">${scan?'Scanned document: Claude or the device read it, so positions are not known. Draw a box on any field to read it from that spot, and save the boxes as a template for this format.':'Green boxes show where each field was found. Draw a box for anything empty or wrong; the text inside fills the field.'}${R.drawing?' <b style="color:var(--ac)">Drawing for '+esc(RVF.find(f=>f[0]===R.drawing)[1])+': drag a box on the page.</b>':''}</p>
+   <div class="rvwrap"><div class="rvdoc" id="rvDoc">${R.pages.map((p,i)=>`<div class="rvpage" data-pg="${i}" style="aspect-ratio:${p.w}/${p.h}"><div class="rvlayer" data-pg="${i}" style="${R.drawing?'cursor:crosshair':''}"></div></div>`).join('')}</div>
+   <div class="rvside"><div class="tw"><table><thead><tr><th>Field</th><th>Value</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+    <div class="panel" style="margin-top:10px;padding:12px"><h3>Template for this format</h3>${t.length?`<div class="row c" style="margin-bottom:8px"><select id="rvTpl" style="max-width:220px">${opts(t.map(x=>[x.id,x.name]),'','Apply a saved template')}</select><button class="btn sm" data-a="rvApply">Apply</button></div>`:''}
+     <div class="grid">${fld('Template name',`<input id="rvTn" value="${esc(R.tn??((b.cust||'')+' '+(LASTFILE&&/loa/i.test(ui.ocr)?'LOA':'document')).trim())}">`)}${fld('Match text',`<input id="rvTm" value="${esc(R.tm??(b.beneficiary||b.cust||''))}">`,'Text found on every document of this format, e.g. the customer name')}</div>
+     <div class="acts" style="margin-top:8px"><button class="btn sm p" data-a="rvSave" ${Object.keys(R.zones).length?'':'disabled'}>Save ${Object.keys(R.zones).length} box(es) as template</button></div></div></div></div>
+   <div class="foot"><button class="btn p" data-a="rvDone">Done</button></div>`,true);
+  R.pages.forEach((p,i)=>{const host=$(`.rvpage[data-pg="${i}"]`);p.cv.style.width='100%';p.cv.style.display='block';host.prepend(p.cv)});
+  RVF.forEach(([k])=>{const bx=R[k];if(!bx)return;const p=R.pages[bx.p],ly=$(`.rvlayer[data-pg="${bx.p}"]`),d=document.createElement('div');d.className='rvbox'+(R.sel===k?' on':'')+(R.zones[k]?' zone':'');Object.assign(d.style,{left:bx.x/p.w*100+'%',top:bx.y/p.h*100+'%',width:bx.w/p.w*100+'%',height:bx.h/p.h*100+'%'});d.title=RVF.find(f=>f[0]===k)[1];d.dataset.k=k;ly.appendChild(d)});
+  $$('#modal-root [data-rk]').forEach(el=>el.onchange=()=>{const k=el.dataset.rk,f=RVF.find(x=>x[0]===k);const v=f[2]==='amount'||f[2]==='number'?num(el.value):el.value.trim();setPath(b,k,v);XF.delete(k);calcPeriod(b);keepDraft(b)});
+  $$('#modal-root .rvlayer').forEach(ly=>{let st=null,box=null;const pt=e=>{const r=ly.getBoundingClientRect();return {x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height}};
+    ly.onpointerdown=e=>{if(!R.drawing)return;e.preventDefault();ly.setPointerCapture?.(e.pointerId);st=pt(e);box=document.createElement('div');box.className='rvbox zone on';ly.appendChild(box)};
+    ly.onpointermove=e=>{if(!st)return;const q=pt(e);Object.assign(box.style,{left:Math.min(st.x,q.x)*100+'%',top:Math.min(st.y,q.y)*100+'%',width:Math.abs(q.x-st.x)*100+'%',height:Math.abs(q.y-st.y)*100+'%'})};
+    ly.onpointerup=async e=>{if(!st)return;const q=pt(e),pi=+ly.dataset.pg,P=R.pages[pi],z={p:pi,x:Math.min(st.x,q.x),y:Math.min(st.y,q.y),w:Math.abs(q.x-st.x),h:Math.abs(q.y-st.y)};st=null;if(z.w<0.01||z.h<0.005){box.remove();return}
+      const k=R.drawing,f=RVF.find(x=>x[0]===k);box.innerHTML='<span class="spin"></span>';const {text,via}=await zoneText(P,{x:z.x*P.w,y:z.y*P.h,w:z.w*P.w,h:z.h*P.h});const v=valOf(text,f[2]);
+      R.zones[k]={...z,x:z.x*P.w,y:z.y*P.h,w:z.w*P.w,h:z.h*P.h,norm:z};R.drawing=null;R.sel=k;if(v!=null&&v!==''){setPath(b,k,v);XF.add(k);if(k==='period.vDate')b.period.vMode='date';if(k==='period.vVal'&&b.period.vMode==='date')b.period.vMode='months';calcPeriod(b);keepDraft(b);toast(f[1]+' read from your box ('+via+'): '+v)}else toast('No readable text in that box ('+via+'). Try a slightly bigger box.',1);rvRender()}})}
+A.rvShow=el=>{ui.rv.sel=el.dataset.k;rvRender();const bx=$('#modal-root .rvbox.on');bx?.scrollIntoView({block:'center',behavior:'smooth'})};
+A.rvDraw=el=>{ui.rv.drawing=el.dataset.k;ui.rv.tn=val('rvTn');ui.rv.tm=val('rvTm');rvRender()};
+A.rvApply=async()=>{const id=val('rvTpl'),t=TPL().find(x=>x.id===id);if(!t)return;const n=await applyTemplate(ui.draft,t,LASTFILE);keepDraft(ui.draft);rvRender();toast(n?'Template filled '+n+' field(s).':'The template filled nothing new (fields already have values).')};
+A.rvSave=()=>{const R=ui.rv,name=val('rvTn');if(!name)return toast('Name the template.',1);const zones=Object.entries(R.zones).map(([field,z])=>({field,...z.norm}));S.m.docTemplates=S.m.docTemplates||[];
+  const ex=S.m.docTemplates.find(t=>t.name.toLowerCase()===name.toLowerCase());if(ex){const m=new Map((ex.zones||[]).map(z=>[z.field,z]));zones.forEach(z=>m.set(z.field,z));ex.zones=[...m.values()];ex.matchText=val('rvTm')||ex.matchText;ex.modAt=now();ex.modBy=me().name}
+  else S.m.docTemplates.push({id:uid('m'),name,docType:/loa/i.test(name)?'LOA':'Other',matchText:val('rvTm'),zones,active:true,createdAt:now(),createdBy:me().name});
+  audit('Masters','Document template saved',name,zones.length+' field box(es)');save();toast('Template saved. Next time a document with “'+(val('rvTm')||name)+'” is read, these boxes are used.')};
+A.rvDone=()=>{ui.rv=null;closeModal();render()};
+</script>
+<style>
+.rvwrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
+.rvdoc{max-height:70vh;overflow:auto;border:1px solid var(--line);border-radius:8px;background:var(--soft);padding:8px;display:flex;flex-direction:column;gap:8px}
+.rvpage{position:relative;width:100%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.12)}
+.rvlayer{position:absolute;inset:0;touch-action:none}
+.rvbox{position:absolute;border:2px solid #1E7A4C;background:rgba(30,122,76,.12);border-radius:2px;pointer-events:none}
+.rvbox.zone{border-color:#1D5FA8;background:rgba(29,95,168,.12)}
+.rvbox.on{box-shadow:0 0 0 3px rgba(245,181,68,.8)}
+.rvside{max-height:70vh;overflow:auto;min-width:0}
+.rvside td{padding:6px 8px}.rvside input{min-height:32px;padding:5px 7px}
+tr.sel td{background:var(--acs)}
+.dlg.wide{width:1200px}
+@media (max-width:900px){.rvwrap{grid-template-columns:minmax(0,1fr)}}
+</style>
+<script>
+/* ---------- v20: review on document — positions on scans, connector lines, value tags ---------- */
+const nrm=s=>String(s??'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function lineParts(its){const L=[];its.forEach(t=>{const l=L.find(l=>Math.abs((l.y+l.h/2)-(t.y+t.h/2))<Math.max(l.h,t.h)*.6);if(l){const x1=Math.max(l.x+l.w,t.x+t.w),y1=Math.max(l.y+l.h,t.y+t.h);l.x=Math.min(l.x,t.x);l.y=Math.min(l.y,t.y);l.w=x1-l.x;l.h=y1-l.y}else L.push({x:t.x,y:t.y,w:t.w,h:t.h})});return L}
+function boxOf(p,its){const x0=Math.min(...its.map(t=>t.x)),y0=Math.min(...its.map(t=>t.y)),x1=Math.max(...its.map(t=>t.x+t.w)),y1=Math.max(...its.map(t=>t.y+t.h));return {p,x:x0,y:y0,w:x1-x0,h:y1-y0,parts:lineParts(its)}}
+findBox=function(pages,value,type){if(value==null||value==='')return null;
+  if(type==='number'){const v=nrm(value);let alt=null;for(let p=0;p<pages.length;p++){const it=pages[p].items;for(let i=0;i<it.length;i++){if(nrm(it[i].s)!==v)continue;const nx=nrm(it[i+1]?.s);if(/^(month|day|year)/.test(nx))return boxOf(p,[it[i],it[i+1]]);alt=alt||boxOf(p,[it[i]])}}return alt}
+  const vs=[...(type==='amount'?valVariants(value,'amount'):type==='date'?valVariants(value,'date'):[]),String(value)].map(v=>nrm(v).slice(0,160)).filter(v=>v.length>=2);
+  for(let p=0;p<pages.length;p++){const it=pages[p].items;for(const lv of vs){for(let i=0;i<it.length;i++){let acc='';for(let j=i;j<Math.min(it.length,i+45);j++){acc+=nrm(it[j].s);
+      if(acc.includes(lv)){if(j>i&&nrm(it.slice(i+1,j+1).map(t=>t.s).join('')).includes(lv))break;return boxOf(p,it.slice(i,j+1))}if(acc.length>lv.length+80)break}}}}return null};
+/* word positions on a scanned page: Tesseract on the page image */
+async function locateWords(pages,prog){if(!window.Tesseract)await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js');
+  const wk=await Tesseract.createWorker('eng');try{for(let i=0;i<pages.length;i++){prog&&prog(i+1,pages.length);const r=await wk.recognize(pages[i].cv);let ws=r.data.words||[];
+    if(!ws.length&&r.data.blocks)ws=r.data.blocks.flatMap(b=>(b.paragraphs||[]).flatMap(p=>(p.lines||[]).flatMap(l=>l.words||[])));
+    pages[i].titems=ws.filter(w=>w.text&&w.text.trim()&&w.confidence>20).map(w=>({s:w.text,x:w.bbox.x0,y:w.bbox.y0,w:w.bbox.x1-w.bbox.x0,h:w.bbox.y1-w.bbox.y0}));if(pages[i].titems.length){pages[i].items=pages[i].titems;pages[i].via='device OCR'}}}finally{try{await wk.terminate()}catch(e){}}}
+/* fallback when OCR cannot load: ask Claude where each value sits (approximate) */
+async function claudeBoxes(pages,b,onPage){const sample=await getSample();if(!sample)return 0;let n=0;
+  const want=RVF.map(([k,l])=>({k,l,v:getPath(b,k)})).filter(x=>x.v!=null&&x.v!=='');if(!want.length)return 0;
+  for(let i=0;i<Math.min(pages.length,2);i++){const P=pages[i];if(P.titems?.length)continue;try{const bl=await new Promise(r=>P.cv.toBlob(r,'image/jpeg',.85));
+    const out=await sample('You are locating text on a scanned document page (page '+(i+1)+'). For each field below, find where the value (or the words it was read from) is printed on this page. Coordinates are on a 0-1000 grid: x from the left edge, y from the top edge of the image. Return JSON only, like {"key":[x0,y0,x1,y1]}, with a tight box around the printed words; for text over several lines, cover all its lines. Leave out fields that are not printed on this page.\n'+want.map(x=>x.k+' ('+x.l+'): '+x.v).join('\n'),{images:[bl]});
+    const j=JSON.parse(String(out.text||'').replace(/^[^{]*/,'').replace(/[^}]*$/,''));const its=[];
+    for(const x of want){const r=j[x.k];if(Array.isArray(r)&&r.length===4&&r.every(v=>v>=0&&v<=1000)&&r[2]>r[0]&&r[3]>r[1]){its.push({s:String(x.v),x:r[0]/1000*P.w,y:r[1]/1000*P.h,w:(r[2]-r[0])/1000*P.w,h:(r[3]-r[1])/1000*P.h,approx:1});n++}}
+    if(!P.titems?.length&&its.length){P.items=its;P.via='Claude (approximate)';onPage&&onPage()}}catch(e){}}return n}
+A.rvOpen=async()=>{const b=ui.draft;if(!b||!LASTFILE)return toast('Read a document first.',1);
+  if(ui.rvCache?.file===LASTFILE&&ui.rvCache.pages){ui.modal={kind:'rv'};ui.rv={pages:ui.rvCache.pages,zones:{},sel:rvFirst(ui.rvCache.pages,b),drawing:null};if(ui.rvCache.busy)ui.rv.status=ui.rvCache.busy;return rvRender()}
+  ui.modal={kind:'rv',busy:true};modal('<h2>Review on document</h2><p class="lead"><span class="spin"></span> Opening the document…</p>',true);
+  let pages;try{pages=await rvTimeout(pdfPages(LASTFILE,3),40000)}catch(e){closeModal();return toast('Could not open the document for review'+(e==='timeout'?' (it took too long). Try again, or use a smaller PDF.':'.'),1)}
+  const file=LASTFILE;ui.rvCache={file,pages};if(ui.modal?.kind!=='rv')return;
+  ui.rv={pages,zones:{},sel:rvFirst(pages,b),drawing:null};
+  if(pages.some(p=>p.items.length))return rvRender();
+  /* scanned: show the page now, find positions in the background */
+  const set=t=>{ui.rvCache.busy=t;if(ui.rv&&ui.rvCache.file===file){ui.rv.status=t;if(ui.modal?.kind==='rv')rvRender()}};
+  set('Finding where the text sits on this scan… you can already draw boxes.');
+  const upd=()=>{if(ui.rv&&ui.rvCache.file===file){ui.rv.sel=ui.rv.sel||rvFirst(pages,b);if(ui.modal?.kind==='rv')rvRender()}};
+  const fin=()=>{ui.rvCache.busy=null;if(ui.rv&&ui.rvCache.file===file)ui.rv.status=pages.some(p=>p.items.length)?null:'Could not find text positions on this scan. Draw a box on any field to read it from that spot.';upd()};
+  const scan=pages.slice(0,2);let left=2;const done=()=>{if(--left===0)fin()};
+  /* Claude marks approximate spots quickly (claude.ai); the device OCR replaces them with exact word positions when it finishes */
+  rvTimeout(claudeBoxes(scan,b,()=>{if(left>1)set('Approximate positions shown. Finding exact word positions…');else upd()}),90000).catch(()=>{}).finally(done);
+  rvTimeout(locateWords(scan,(i,n)=>{if(!pages.some(p=>p.items.length))set('Finding where the text sits on this scan (page '+i+' of '+n+')… you can already draw boxes.')}),120000).then(()=>{if(pages.some(p=>p.titems?.length)&&left>1){ui.rvCache.busy=null;if(ui.rv)ui.rv.status=null;upd()}}).catch(()=>{}).finally(done)};
+const rvTimeout=(p,ms)=>Promise.race([p,new Promise((_,r)=>setTimeout(()=>r('timeout'),ms))]);
+const rvFirst=(pages,b)=>RVF.map(f=>f[0]).find(k=>{const v=getPath(b,k);return v!=null&&v!==''&&findBox(pages,v,RVF.find(f=>f[0]===k)[2])})||null;
+/* lines from the field to its box, value tag on the box, click a box or field to select */
+const _rvR20=rvRender;rvRender=function(){_rvR20();const R=ui.rv;if(!R||!$('#rvDoc'))return;const b=ui.draft;
+  const approx=R.pages.some(p=>p.items.some(t=>t.approx)),ocr=R.pages.find(p=>p.via)?.via;const ld=$('#modal-root .lead');
+  if(ld&&R.status&&!R.drawing)ld.innerHTML=(/Could not/.test(R.status)?'':'<span class="spin"></span> ')+esc(R.status);else if(ld&&ocr&&!R.drawing)ld.innerHTML='Text positions found by '+esc(ocr)+(approx?' — boxes are approximate':'')+'. Click a field to see where it came from. Draw a box for anything empty or wrong; the text inside fills the field.';
+  $$('#modal-root .rvside tbody tr').forEach(tr=>{const k=tr.querySelector('[data-rk]')?.dataset.rk;if(!k)return;tr.dataset.k=k;tr.style.cursor='pointer';tr.onclick=e=>{if(e.target.closest('button'))return;rvSel(k)};tr.querySelector('input').addEventListener('focus',()=>rvSel(k))});
+  $$('#modal-root .rvbox[data-k]').forEach(d=>{const bx=R[d.dataset.k],P=R.pages[bx?.p];if(!bx?.parts||bx.parts.length<2||!P)return;bx.parts.forEach((q,i)=>{const e=d.cloneNode();Object.assign(e.style,{left:q.x/P.w*100+'%',top:q.y/P.h*100+'%',width:q.w/P.w*100+'%',height:q.h/P.h*100+'%'});if(i)e.dataset.part=1;d.parentNode.appendChild(e)});d.remove()});
+  $$('#modal-root .rvbox').forEach(d=>{if(R.drawing)return;d.style.pointerEvents='auto';d.style.cursor='pointer';d.onclick=e=>{e.stopPropagation();rvSel(d.dataset.k,1)}});
+  const sc=$('#modal-root .scrim');let sv=$('#rvLines');if(!sv){sv=document.createElementNS('http://www.w3.org/2000/svg','svg');sv.id='rvLines';sc.appendChild(sv)}
+  $('#rvDoc').onscroll=rvLines;$('#modal-root .rvside').onscroll=rvLines;window.onresize=rvLines;$('#modal-root .dlg').onscroll=rvLines;
+  if(R.sel)rvSel(R.sel,0,1);else rvLines()};
+function rvSel(k,fromBox,noScroll){const R=ui.rv;if(!R)return;R.sel=k;const b=ui.draft;
+  $$('#modal-root .rvside tr.sel').forEach(t=>t.classList.remove('sel'));const tr=$(`#modal-root .rvside tr[data-k="${k}"]`);tr?.classList.add('sel');
+  $$('#modal-root .rvbox').forEach(d=>d.classList.toggle('on',d.dataset.k===k));const bxs=$$(`#modal-root .rvbox[data-k="${k}"]`);$$('#modal-root .rvtag').forEach(t=>t.remove());
+  const bx=bxs.at(-1);if(bx){const f=RVF.find(x=>x[0]===k),tag=document.createElement('div');tag.className='rvtag';tag.innerHTML=`<b>${esc(f[1])}</b><span>${esc(getPath(b,k)??'')}</span>`;
+    tag.style.left=bx.style.left;tag.style.top=`calc(${bx.style.top} + ${bx.style.height} + 4px)`;bx.parentNode.appendChild(tag);
+    if(!noScroll||fromBox){if(fromBox)tr?.scrollIntoView?.({block:'nearest',behavior:'smooth'});else{const doc=$('#rvDoc'),br=bx.getBoundingClientRect(),dr=doc.getBoundingClientRect();if(br.top<dr.top+20||br.bottom>dr.bottom-20)doc.scrollTop+=br.top-dr.top-dr.height/3}}}
+  rvLines();setTimeout(rvLines,350)}
+function rvLines(){const sv=$('#rvLines');if(!sv)return;const R=ui.rv,k=R?.sel;sv.innerHTML='';if(!k||R.drawing)return;
+  const bx=$(`#modal-root .rvbox[data-k="${k}"]:not([data-part])`),tr=$(`#modal-root .rvside tr[data-k="${k}"]`),doc=$('#rvDoc'),side=$('#modal-root .rvside');if(!bx||!tr)return;
+  const b=bx.getBoundingClientRect(),t=tr.getBoundingClientRect(),d=doc.getBoundingClientRect(),s=side.getBoundingClientRect();
+  if(b.bottom<d.top||b.top>d.bottom||t.bottom<s.top||t.top>s.bottom)return;
+  const by=Math.min(Math.max(b.top+b.height/2,d.top),d.bottom),bxr=Math.min(b.right,d.right),ty=Math.min(Math.max(t.top+t.height/2,s.top),s.bottom),tx=t.left,mid=tx-18;
+  sv.innerHTML=`<path d="M${bxr} ${by} L${mid} ${ty} L${tx} ${ty}" fill="none" stroke="#3B6FE0" stroke-width="1.6"/><circle cx="${bxr}" cy="${by}" r="3.5" fill="#3B6FE0"/><circle cx="${tx}" cy="${ty}" r="4" fill="#fff" stroke="#3B6FE0" stroke-width="1.6"/>`}
+const _rvD20=A.rvDone;A.rvDone=()=>{window.onresize=null;_rvD20()};
+/* a new file read clears the cached positions */
+const _rt20=runTenderOCR;runTenderOCR=async function(file){ui.rvCache=null;return _rt20(file)};
+</script>
+<style>
+#rvLines{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:60;overflow:visible}
+.rvbox{border:1.5px solid rgba(30,122,76,.55);background:rgba(76,175,80,.22);border-radius:2px}
+.rvbox.on{border:2px solid #3B6FE0;background:rgba(59,111,224,.12);box-shadow:none}
+.rvbox.zone{border-color:#1D5FA8}
+.rvtag{position:absolute;z-index:3;background:#fff;border:1px solid var(--line);border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.18);padding:6px 9px;font-size:12px;min-width:150px;max-width:280px;pointer-events:none;color:#1a1a1a}
+.rvtag b{display:block;font-size:11px;color:#666;font-weight:600;margin-bottom:2px}.rvtag span{display:block;border:1px solid #ddd;border-radius:4px;padding:3px 6px;word-break:break-word}
+.rvside tr.sel td{background:rgba(59,111,224,.08)}.rvside tr.sel td:first-child{box-shadow:inset 3px 0 0 #3B6FE0}
+</style>
+<script>
+/* ---------- v23: on Render, Claude reads documents through the site's own server (/api/claude) ---------- */
+let srvP=null;
+const _gs23=getSample;getSample=function(){if(window.claude?.use)return _gs23();if(!srvP)srvP=fetch('api/claude/health').then(r=>r.ok?r.json():null).then(j=>j?.ok?serverSample(j):null).catch(()=>null);return srvP};
+function serverSample(info){const b64=bl=>new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(bl)});
+  const s=async(prompt,opt={})=>{const images=[];for(const im of (opt.images||[]).slice(0,5))images.push({type:im.type||'image/png',data:await b64(im)});
+    const r=await fetch('api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,images})});const j=await r.json().catch(()=>({}));
+    if(!r.ok)throw {code:r.status===429?'rate_limited':'server',message:j.error||('Claude server error '+r.status)};return {text:j.text||''}};
+  s.json=async(prompt,opt)=>{const t=(await s(prompt+'\n\nReply with the JSON object only, no other text.',opt)).text.replace(/```(json)?/g,'');const a=t.indexOf('{'),z=t.lastIndexOf('}');if(a<0||z<a)throw {message:'Claude did not return JSON'};return JSON.parse(t.slice(a,z+1))};
+  s.limits=async()=>({images:{maxCount:5}});s.via='server';s.model=info.model;return s}
+</script>
+<script>
+/* ---------- v24: learned reading rules — corrections teach the reader, per document format ---------- */
+const LRF=[['cust','Customer','customer','text'],['beneficiary','Beneficiary','beneficiary','text'],['tenderRef','Tender / contract ref','tender_ref','code'],['project','Project name','project_name','text'],['amount','Bond amount','bond_amount_inr','amount'],['contractValue','Contract value','contract_value_inr','amount'],['period.start','Bond start','bond_start','date'],['period.vVal','Validity (months)','completion_months','number']];
+const lrf=k=>LRF.find(f=>f[0]===k||f[1]===k);
+MDEF.learnRules={l:'Learned reading rules',d:'Made when someone corrects a field that was read from a document. Claude gets these rules with every document, and on-device reading uses the label. Edit the wording or switch a rule off.',
+  f:[['format','Format: text found on these documents (e.g. the customer name)','text',1],['docType','Document type','sel',1,()=>['LOA','Tender','PO','Any']],['field','Field','sel',1,()=>LRF.map(f=>f[1])],['rule','Rule (in plain words, sent to Claude)','text',1],['after','Label before the value on the document (optional)','text'],['example','Example correction','text'],['uses','Times applied','num']],used:()=>0};
+const LR=()=>MA('learnRules');
+const fmtHit=(r,text,cust)=>{const f=String(r.format||'').toLowerCase().trim();if(!f)return false;return String(text||'').toLowerCase().includes(f)||String(cust||'').toLowerCase().includes(f)||f.includes(String(cust||'~').toLowerCase())};
+function rulesPrompt(){const R=LR().slice(0,60);if(!R.length)return '';const g={};R.forEach(r=>{const k=r.format+' · '+(r.docType||'Any');(g[k]=g[k]||[]).push(r)});
+  return '\n\nLEARNED RULES from past corrections by the Zetwerk team. If the document matches a format below (its text appears on the document), follow those rules; they override your own reading:\n'+Object.entries(g).map(([k,rs])=>'Format "'+k+'":\n'+rs.map(r=>{const f=lrf(r.field);return '- '+(f?f[2]+' ('+f[1]+')':r.field)+': '+r.rule+(r.after?' The value comes after the words "'+r.after+'".':'')}).join('\n')).join('\n')}
+/* Claude path: rules go with the prompt; device path: apply labels to the text */
+const _rf24=readFields;readFields=async function(file,prompt,ruleFn,onS){if(typeof OCR_PI17!=='undefined'&&prompt===OCR_PI17)return _rf24(file,prompt,ruleFn,onS);
+  const rf=ruleFn&&(t=>{const x=ruleFn(t)||{};LR().forEach(r=>{if(!fmtHit(r,t,x.customer))return;const f=lrf(r.field);if(!f)return;const fix=!r.after&&(f[0]==='cust'||f[0]==='beneficiary')&&String(r.rule).match(/^Use "(.+?)"/);if(fix){x[f[2]]=fix[1];return}if(!r.after)return;const v=lblVal(t,r.after,f[3]);if(v!=null&&v!==''&&!(typeof v==='number'&&isNaN(v)))x[f[2]]=v});return x});
+  return _rf24(file,prompt+rulesPrompt(),rf,onS)};
+/* remember what was read, to compare at submit */
+const _rt24=runTenderOCR;runTenderOCR=async function(file){const b=ui.draft;await _rt24(file);if(!b||!XF.size)return;const read={};LRF.forEach(([k])=>{if(XF.has(k))read[k]=getPath(b,k)});
+  b.learnSnap={file:file.name,text:LASTTEXT.slice(0,60000),doc:/\(LOA\)/.test(ui.ocr)?'LOA':/\(PO\)/.test(ui.ocr)?'PO':/\(TENDER\)/i.test(ui.ocr)?'Tender':'Any',read,cust:b.cust||b.beneficiary||''};
+  const hit=LR().filter(r=>fmtHit(r,LASTTEXT,b.cust||b.beneficiary));if(hit.length){hit.forEach(r=>{r.uses=(+r.uses||0)+1;r.lastUsed=now()});save();ui.ocr+=`<div style="margin-top:6px">Used ${hit.length} learned rule(s) for <b>${esc(hit[0].format)}</b>.</div>`;render()}
+  keepDraft(b)};
+function preLabel(text,v,ty){const t=String(text||'').replace(/\s+/g,' ');for(const x of valVariants(v,ty==='number'?'amount':ty==='code'?'text':ty)){let i=t.toLowerCase().indexOf(String(x).toLowerCase());if(i<0)continue;const w=t.slice(Math.max(0,i-60),i).replace(/[\s:\-–.]+$/,'').split(' ').filter(Boolean);
+  for(const k of [2,3,1]){if(w.length<k)continue;const lab=w.slice(-k).join(' ').replace(/^[^A-Za-z(]+/,'');if(lab.length>=3&&!/^\d/.test(lab))return lab}}return null}
+function lblVal(t,lab,ty){t=String(t||'').replace(/\s+/g,' ');if(ty==='code'||ty==='number'){const m=t.match(new RegExp(reEsc(lab)+'\\s*[:.\\-–]*\\s*(\\S+)','i'));if(!m)return null;const v=m[1].replace(/[,;]$/,'');return ty==='number'?(+v.replace(/[^\d.]/g,'')||null):v}return byLabel(t,lab,ty)}
+function learnFrom(b){const s=b.learnSnap;if(!s)return 0;let n=0;S.m.learnRules=S.m.learnRules||[];const fmt=String(LR().find(r=>fmtHit(r,s.text,''))?.format||s.cust||b.cust||b.beneficiary||'').trim();if(!fmt)return 0;
+  LRF.forEach(([k,l,j,ty])=>{const was=s.read[k],now_=getPath(b,k);if(emp(now_)||(!emp(was)&&sameV(was,now_)))return;if(k==='period.vVal'&&b.period?.vMode==='date')return;
+    const after=s.text?(ty==='amount'||ty==='date'?findLabel(s.text,now_,ty):null)||preLabel(s.text,now_,ty):null;const stable=k==='cust'||k==='beneficiary';
+    if(emp(was)&&!after&&!stable)return;
+    const rule=stable?`Use "${now_}"${was?` (it was read as "${was}")`:''}.`:after?`Take the ${l.toLowerCase()} from the value printed after "${after}"${was?`, not "${String(was).slice(0,60)}"`:''}.`:`Read the ${l.toLowerCase()} carefully: last time it was read as "${String(was).slice(0,60)}" but the correct value was "${String(now_).slice(0,60)}". Look for the value in the same place on this format.`;
+    const ex=S.m.learnRules.find(r=>r.format.toLowerCase()===fmt.toLowerCase()&&r.field===l&&(r.docType===s.doc||r.docType==='Any'));
+    const exm=`${fd(TODAY)}: ${was??'(empty)'} → ${now_} · ${s.file}`;
+    if(ex){ex.rule=rule;if(after)ex.after=after;ex.example=exm;ex.modAt=now();ex.modBy=me().name;ex.active=true}
+    else S.m.learnRules.unshift({id:uid('m'),format:fmt,docType:s.doc,field:l,rule,after:after||'',example:exm,uses:0,active:true,createdAt:now(),createdBy:me().name});n++});
+  if(n)audit('Masters','Reading rules learned',fmt,n+' rule(s) from '+s.file);delete b.learnSnap;return n}
+const _sr24=A.submitReq;A.submitReq=()=>{const b=ui.draft;_sr24();if(!b||b.status!=='open'||!b.learnSnap)return;const n=learnFrom(b);save();if(n)toast('Learned '+n+' reading rule(s) from your corrections. See Masters → Learned reading rules.')};
 </script>
 <script>boot();</script>
 

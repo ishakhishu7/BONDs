@@ -5,20 +5,23 @@
 - `seed.json` – starting data: Surety Bond Tracker (domestic + international), insurers, entities, stamp duty
 - `SECI_70MW_tender_extract.pdf` – sample tender for the "Read the tender" demo
 
-## Deploy on Render
-1. Push these three files to the root of a GitHub repo.
-2. In Render: **New → Static Site**, connect the repo.
-3. Build command: leave empty. Publish directory: `.`
-4. Deploy. The app opens at the Render URL.
+## Deploy on Render (free, static, no API key)
+1. Push these files to the root of the GitHub repo: `index.html`, `seed.json`, `SECI_70MW_tender_extract.pdf`, `README.md`.
+2. Render: keep your existing **Static Site** (build command empty, publish directory `.`). It redeploys on commit.
 
-## How it behaves on Render (outside claude.ai)
-| Feature | On claude.ai (artifact) | On Render (this static build) |
+Documents are read on the device: text PDFs directly, scans with the free browser OCR, plus your templates and learned rules. No Claude API, no cost.
+
+## How it behaves on Render
+| Feature | On claude.ai (artifact) | On Render |
 |---|---|---|
-| Data | Shared database, everyone sees the same requests | Saved in each person's browser only (localStorage) |
-| Sign-in | claude.ai account linked to a Bond Desk user | No sign-in; use "Signed in as" to switch demo users |
-| Uploaded files | Kept in the uploader's browser; download from there | Same: kept in the uploader's browser (IndexedDB) |
-| Downloads (Excel, payment advice PDF, files) | Through the claude.ai download prompt | Normal browser download |
-| Read tender with Claude (OCR) | Live | Demo values only (no Claude access) |
+| Data | Shared database, everyone sees the same requests | Saved in each person's browser only |
+| Read LOA / tender | Claude (your claude.ai account) | On the device (free) |
+| Review on document, templates, learned rules | Yes | Yes (saved in that browser) |
+
+## Teaching the reader
+- **Learned reading rules** (Masters): when someone corrects a field that was read from a document and submits the request, a rule is saved for that document format (e.g. BPCL LOA). Claude gets the rules with every document; on-device reading uses the label. Edit or switch off any rule in Masters.
+- **Document templates** (Masters): boxes drawn on "Review on document", applied to every document with the same match text.
+- **Reading accuracy** (Setup): how often each field was right, corrected or missed.
 
 ## What the production build needs (not in this static file)
 - A backend and database (shared data, audit log, approvals across users)
