@@ -773,7 +773,7 @@ A.addSlot=()=>{const b=ui.draft;ui.modal={kind:'slot'};modal(`<h2>Add a document
 A.addSlotGo=()=>{const n=val('slName');if(!n)return toast('Enter a document name.',1);ui.draft.reqDocs.push({name:n,mandatory:false,owner:'BU',file:null,remark:'',extra:true});closeModal();keepDraft(ui.draft);render()};
 
 function reqErrors(b){const e=[];
-  if(b.kind==='new'){if(!b.bu)e.push('Business unit');if(!b.entity)e.push('Legal entity');if(!b.type)e.push('Bond type');if(!(+b.amount>0))e.push('Bond amount');if(!b.beneficiary)e.push('Beneficiary');if(!b.project)e.push('Project name');if(!b.projectStatus)e.push('Project status');if(!b.reqStatus)e.push('Bond requirement status');if(!b.requiredBy)e.push('Required-by date');if(b.pg?.on&&!b.pg.entity)e.push('Parent entity giving the surety');
+  if(b.kind==='new'){if(!b.bu)e.push('Business unit');if(!b.entity)e.push('Legal entity');if(!b.type)e.push('Bond type');if(!(+b.amount>0))e.push('Bond amount');if(!b.beneficiary)e.push('Beneficiary');if(!b.project)e.push('Project name');if(!b.projectStatus)e.push('Project status');if(!b.reqStatus)e.push('Bond requirement status');if(!b.requiredBy)e.push('Required-by date');
     if(b.period.mode==='bid'){if(!b.period.sub)e.push('Bid submission date');if(b.period.validityMode==='date'?!b.period.validityDate:b.period.validity==='')e.push('Bid validity')}else{if(!b.start)e.push('Bond start date');if(!b.expiry)e.push('Bond expiry date')}}
   else{const c=b.changes||{},p=bond(b.parentId)||{};if(c.expiry===p.expiry&&c.claim===p.claim&&+c.amount===+p.amount&&c.beneficiary===p.beneficiary&&!c.wording)e.push('At least one change');if(!b.remarks)e.push('Reason for the change');if(!b.requiredBy)e.push('Required-by date')}
   b.reqDocs.forEach(d=>{if(d.mandatory&&!d.file&&!String(d.remark||'').trim())e.push(d.name+': upload it or give a remark');});
@@ -807,7 +807,7 @@ VIEWS.request=()=>{
      ${fld('BU Finance (POC)',inp(b,'financePoc','text','placeholder="Name · email"'),'Filled from the BU master; edit if needed.')}
      ${fld('Legal entity <span class="req">*</span>',sel(b,'entity',MA('entities').map(x=>x.name),'Choose'))}
      ${fld('Geography',sel(b,'geography',MA('geos').map(x=>x.name),'Choose'))}
-     ${fld('Currency',sel(b,'currency',MA('currencies').map(x=>x.code),null,true),'From the entity.')}${pgBlock(b)}</div></div>
+     ${fld('Currency',sel(b,'currency',MA('currencies').map(x=>x.code),null,true),'From the entity.')}</div></div>
    <div class="panel"><h3>Beneficiary and project</h3><div class="grid">
      ${fld('Customer',inp(b,'cust'))}${fld('Beneficiary (as in the bond) <span class="req">*</span>',inp(b,'beneficiary'))}
      ${fld('Public / private',sel(b,'benClass',['Public','Private'],'Choose'))}${fld('Tender / contract reference',inp(b,'tenderRef'))}
@@ -831,7 +831,7 @@ VIEWS.request=()=>{
        ${fld('Bond start',`<input readonly value="${fd(b.start)}">`)}${fld('Bond expiry',`<input readonly value="${fd(b.expiry)}">`,'Submission + validity + condition + additional days')}${fld('Claim expiry',`<input readonly value="${fd(b.claim)}">`,'Expiry + claim period')}`
      :termBlock(b)}</div></div>`;
   const docs=`<div class="panel"><div class="row c" style="justify-content:space-between"><div><h3 style="margin:0">Documents${b.type?' for '+esc(b.type):''}</h3><span class="mu">Upload each document (any file type, or one zip for many). If a document is not being sent, say why in Remarks.</span></div><div class="acts"><button class="btn" data-a="packUp">Upload zip or several files</button><button class="btn" data-a="addSlot">Add a document</button></div></div>
-    <div style="margin-top:10px">${b.reqDocs.length?tbl('<th>Document</th><th>Required</th><th>File</th><th style="min-width:200px">Remarks if not sent</th><th></th>',b.reqDocs.map((d,i)=>`<tr><td><b>${esc(d.name)}</b>${d.owner?`<div class="mu">${esc(d.owner)}</div>`:''}</td><td>${d.mandatory?pill('Mandatory','wa'):pill('Optional','gr')}</td><td>${fileChip(d.file)}${d.file?.contents?`<div class="mu">${d.file.contents.length} files inside</div>`:''}</td><td><input id="sr_${i}" data-ch="slotRemark" data-i="${i}" value="${esc(d.remark||'')}" placeholder="${d.file?'':'Why it is not sent'}" ${d.file?'disabled':''}></td><td><div class="acts"><button class="btn sm" data-a="slotUp" data-i="${i}">${d.file?'Replace':'Upload'}</button>${d.file?`<button class="btn sm d" data-a="slotClear" data-i="${i}">Remove</button>`:''}</div></td></tr>`).join('')):`<p class="mu">${b.type||isChild?'No checklist is set up for this bond type. Add documents, or ask an admin to set it up in Masters.':'Choose the bond type to see its document checklist.'}</p>`}</div>
+    <div style="margin-top:10px">${b.reqDocs.length?tbl('<th>Document</th><th>Required</th><th>File</th><th style="min-width:200px">Remarks if not sent</th><th></th>',b.reqDocs.map((d,i)=>`<tr><td><b>${esc(d.name)}</b>${d.owner?`<div class="mu">${esc(d.owner)}</div>`:''}</td><td>${d.mandatory?pill('Mandatory','wa'):pill('Optional','gr')}</td><td>${fileChip(d.file)}${d.file?.contents?`<div class="mu">${d.file.contents.length} files inside</div>`:''}</td><td><input id="sr_${i}" data-ch="slotRemark" data-i="${i}" value="${esc(d.remark||'')}" placeholder="${d.file?'':'Why it is not sent'}" ${d.file?'disabled':''}></td><td><div class="acts"><button class="btn sm" data-a="slotUp" data-i="${i}">${d.file?'Replace':'Upload'}</button>${d.file?`<button class="btn sm d" data-a="slotClear" data-i="${i}">Remove file</button>`:''}<button class="btn sm d" data-a="slotDel" data-i="${i}" title="Delete this document from the request">🗑 Delete</button></div></td></tr>`).join(''))+(b.rmDocs?.names?.length?`<div class="mu" style="margin-top:6px">Deleted from this request: ${b.rmDocs.names.map((n,k)=>`${esc(n)} <button class="btn link" data-a="slotRestore" data-i="${k}">Restore</button>`).join(' · ')}</div>`:''):`<p class="mu">${b.type||isChild?'No checklist is set up for this bond type. Add documents, or ask an admin to set it up in Masters.':'Choose the bond type to see its document checklist.'}</p>`}</div>
     <div class="grid" style="margin-top:14px">${isChild?'':fld('Bond wording','<textarea id="f_wd" data-ch="df" data-f="wording">'+esc(b.wording)+'</textarea>','The wording the bond must carry. Paste it here, or upload it above as a document.')+fld('Remarks for the bond team','<textarea id="f_rm2" data-ch="df" data-f="remarks">'+esc(b.remarks)+'</textarea>')}</div>
     <label class="ck" style="margin-top:12px"><input type="checkbox" id="f_cmp" data-ch="df" data-f="complete" ${b.complete?'checked':''}> I confirm the documents above are complete, or I have given a reason for each one not sent.</label></div>`;
   return err+head+(b.status==='draft'?draftsBox:'')+ocr+biz+docs+`<div class="row" style="justify-content:flex-end">${b.status==='draft'?'<button class="btn" data-a="saveDraft">Save draft</button>':''}<button class="btn p" data-a="submitReq">${b.status==='open'?'Resubmit':'Submit request'}</button></div>`};
@@ -914,7 +914,7 @@ VIEWS.register=()=>{
    <td class="w"><button class="btn link" data-a="openBond" data-id="${b.id}">${esc(b.ref||'Draft')}</button>${slaPill(b)}</td><td class="w">${fd(b.createdAt)}</td><td class="w">${b.requestedAt?fd(b.requestedAt):'—'}</td><td>${esc(b.requestor||'')}</td>
    <td class="w"><button class="btn link" data-a="verOpen" data-id="${b.id}">${esc(verOf(b))}</button></td><td>${esc(KIND_L[b.kind]||'')}</td><td>${statusPill(b)}</td><td class="w">${esc(REG_COLS[7].g(b))}</td>
    <td>${p?`${esc(WHO_L[p.who])}${isMine(b)?' '+pill('You','ac'):''}<div class="mu">${esc(p.text)}</div>`:''}</td>
-   <td>${esc(b.bu||'')}</td><td>${esc(REG_COLS[10].g(b))}</td><td class="w">${esc(b.type||'')}</td><td style="min-width:170px">${esc(b.beneficiary||b.cust||'')}</td><td class="n w">${money(b.amount,curOf(b))}</td><td>${esc(curOf(b))}</td><td>${esc(b.insurer||'')}</td><td>${esc(REG_COLS[16].g(b))}</td><td class="w">${fd(b.expiry)}</td><td>${esc(b.pg?.on?b.pg.entity:'')}</td>
+   <td>${esc(b.bu||'')}</td><td>${esc(REG_COLS[10].g(b))}</td><td class="w">${esc(b.type||'')}</td><td style="min-width:170px">${esc(b.beneficiary||b.cust||'')}</td><td class="n w">${money(b.amount,curOf(b))}</td><td>${esc(curOf(b))}</td><td>${esc(b.insurer||'')}</td><td>${esc(REG_COLS[16].g(b))}</td><td class="w">${fd(b.expiry)}</td>
    <td class="stk"><button class="btn sm" data-a="openBond" data-id="${b.id}">Open</button></td></tr>`}).join('')||`<tr><td colspan="20" class="empty">No requests match. Clear the filters or pick another tab.</td></tr>`}</tbody></table></div>`};
 A.regChip=el=>{ui.reg.chip=el.dataset.c;render()};
 A.regXl=()=>{const rows=ftRows(TBL.reg);xlsxOut('Bond_register_'+TODAY+'.xlsx',[['Bond register',[[...REG_COLS.map(c=>c.l),'Project','Tender ref','Start','Claim expiry','Bond number','Premium (PI)','UTR'],...rows.map(b=>[...REG_COLS.map(c=>c.k==='am'?+b.amount||0:c.g(b)),b.project||'',b.tenderRef||'',b.start||'',b.claim||'',b.final?.bondNo||'',b.pi?.premium??'',b.payment?.utr||''])]]])};
@@ -1110,7 +1110,7 @@ A.withdraw=()=>confirmBox('Withdraw this request?','The request stops here and i
 
 /* detail sections */
 function details(b){const c=curOf(b);return `<div class="panel"><h2>Request details</h2><div class="kv">
-  <div><span>Business unit</span><b>${esc(b.bu||'—')}</b></div><div><span>BU Finance (POC)</span><b>${esc(b.financePoc||'—')}</b></div><div><span>Legal entity (applicant)</span><b>${esc(b.entity||'—')}</b></div><div><span>Surety from parent</span><b>${b.pg?.on?esc(pgText(b)):'No'}</b></div><div><span>Geography · currency</span><b>${esc(b.geography||'—')} · ${esc(c)}</b></div>
+  <div><span>Business unit</span><b>${esc(b.bu||'—')}</b></div><div><span>BU Finance (POC)</span><b>${esc(b.financePoc||'—')}</b></div><div><span>Legal entity (applicant)</span><b>${esc(b.entity||'—')}</b></div><div><span>Geography · currency</span><b>${esc(b.geography||'—')} · ${esc(c)}</b></div>
   <div><span>Customer</span><b>${esc(b.cust||'—')}</b></div><div><span>Beneficiary</span><b>${esc(b.beneficiary||'—')} ${b.benClass?'· '+esc(b.benClass):''}</b></div><div><span>Project</span><b>${esc(b.project||'—')}</b></div><div><span>Tender / contract</span><b>${esc(b.tenderRef||'—')}</b></div>
   <div><span>Project status</span><b>${esc(b.projectStatus||'—')}${b.pct?' · '+esc(b.pct)+'%':''}</b></div><div><span>Requirement status</span><b>${esc(b.reqStatus||'—')}</b></div><div><span>Contract value</span><b>${money(b.contractValue,c)}</b></div><div><span>Required by</span><b>${fd(b.requiredBy)}</b></div>
   <div><span>Bond period</span><b>${fd(b.start)} → ${fd(b.expiry)}</b></div><div><span>Claim expiry</span><b>${fd(b.claim)}</b></div>${b.period?.mode==='bid'&&b.period.sub?`<div><span>Bid calculation</span><b>${fd(b.period.sub)} + ${b.period.validityMode==='date'?dBetween(b.period.sub,b.period.validityDate):b.period.validity||0} validity + ${b.period.cond||0} + ${b.period.add||0} days</b></div>`:''}
@@ -1133,7 +1133,7 @@ function piSheet(b,p,draft){const c=curOf(b),i=insOf(b.insurer)||{},e=entOf(b.en
   <div class="shd"><div><h3>PROFORMA INVOICE</h3><div class="ssub">${draft?'Draft preview of the figures entered in Bond Desk':'As recorded in Bond Desk from the insurer\'s PI'}</div></div>
    <div class="smk"><span>PI number</span><b>${esc(p.no||'—')}</b><span>PI date</span><b>${p.date?fd(p.date):'—'}</b><span>Bond request</span><b>${esc(b.ref||'')}</b></div></div>
   <div class="sbox"><div><h4>ISSUED BY (INSURER)</h4><p><b>${esc(b.insurer||'—')}</b><br>${b.broker&&b.broker!=='Direct'?'Through '+esc(b.broker)+'<br>':'Direct<br>'}GSTIN: ${esc(i.gstin||'not in insurer master')}</p></div>
-   <div><h4>BILLED TO</h4><p><b>${esc(e.name)}</b>${b.pg?.on?'<br>Surety: '+esc(b.pg.entity)+' (parent)':''}<br>GSTIN: ${esc(S.settings.gstin||'—')} ${p.gstinOk?'<span class="sok">✓ shown on PI</span>':'<span class="ser">✗ not confirmed on PI</span>'}</p></div></div>
+   <div><h4>BILLED TO</h4><p><b>${esc(e.name)}</b><br>GSTIN: ${esc(S.settings.gstin||'—')} ${p.gstinOk?'<span class="sok">✓ shown on PI</span>':'<span class="ser">✗ not confirmed on PI</span>'}</p></div></div>
   <table><thead><tr><th>Description</th><th class="r">Amount (${esc(c)})</th></tr></thead><tbody>
    <tr><td>Premium for ${esc(b.type)} of ${money(b.amount,c)} favouring ${esc(b.beneficiary||b.cust)}<br><span class="sg">Period ${fd(b.start)} to ${fd(b.expiry)} · claim till ${fd(b.claim)}${b.quote?.rate!=null?' · rate '+b.quote.rate+'%':''}</span></td><td class="r">${full(p.premium,c)}</td></tr>
    <tr><td>GST</td><td class="r">${full(p.gst||0,c)}</td></tr>
@@ -1171,7 +1171,7 @@ function adviceNo(b){return 'PA/'+(b.ref||'').replace(/^BND\//,'')}
 function adviceSheet(b){const p=b.payment,c=curOf(b),e=entOf(b.entity)||{name:b.entity},f=p.from||{},t=p.payee||{};
   return `<div class="sheet-wrap"><div class="sheet"><div class="srule"></div>
   <div class="shd"><div><h3>PAYMENT ADVICE</h3><div class="ssub">Surety bond premium</div></div><div class="smk"><span>Advice no</span><b>${esc(adviceNo(b))}</b><span>Date</span><b>${fd(TODAY)}</b><span>Bond request</span><b>${esc(b.ref)}</b></div></div>
-  <div class="sbox"><div><h4>FROM</h4><p><b>${esc(e.name)}</b>${b.pg?.on?'<br>Parent surety: '+esc(b.pg.entity):''}<br>GSTIN: ${esc(S.settings.gstin||'—')}<br>Debit account: ${esc(f.bank||'—')} ${mask(f.account)}${f.ifsc?' · IFSC '+esc(f.ifsc):''}</p></div>
+  <div class="sbox"><div><h4>FROM</h4><p><b>${esc(e.name)}</b><br>GSTIN: ${esc(S.settings.gstin||'—')}<br>Debit account: ${esc(f.bank||'—')} ${mask(f.account)}${f.ifsc?' · IFSC '+esc(f.ifsc):''}</p></div>
    <div><h4>TO</h4><p><b>${esc(t.name||b.insurer)}</b>${b.broker&&b.broker!=='Direct'?'<br>Through '+esc(b.broker):''}<br>Credit account: ${esc(t.bank||'—')} ${mask(t.account)}${t.ifsc?' · IFSC '+esc(t.ifsc):''}</p></div></div>
   <p style="margin:12px 0 0">Dear Sir / Madam, we have paid the premium below against your proforma invoice. Please issue the bond and share the tax invoice.</p>
   <table><thead><tr><th>Particulars</th><th class="r">Amount (${esc(c)})</th></tr></thead><tbody>
@@ -1258,27 +1258,8 @@ function importEml(raw,b){const r=parsePart(raw.replace(/\r\n/g,'\n'));const H=r
   if(added)blog(b,'Imported '+added+' mail(s) from “'+subj+'”.','Communication');return added}
 </script>
 <script>
-/* ============ surety from the parent entity (bond for a sister / subsidiary entity) ============ */
-const PG_TYPES=['Parent company guarantee (corporate guarantee)','Parent as co-applicant / joint indemnifier','Issued under the parent’s facility'];
-const PG_DOCS=[['Parent company guarantee / counter-indemnity','Parent entity'],['Parent board resolution','Secretarial (parent)']];
-const blankPg=()=>({on:false,entity:'',type:PG_TYPES[0],note:''});
-const pgText=b=>b.pg?.on?(b.pg.entity||'Parent not chosen')+' · '+b.pg.type:'';
-function pgBlock(b){if(!b.pg)b.pg=blankPg();const ents=MA('entities').map(e=>e.name).filter(n=>n!==b.entity);
-  return `<div class="fld full"><label class="ck"><input type="checkbox" id="f_pg" data-ch="df" data-f="pg.on" data-rr="1" ${b.pg.on?'checked':''}> Insurer needs a surety from the parent entity</label><div class="hint">Use when the bond is for a sister or subsidiary entity and the insurer asks for the parent’s backing. The bond team can also set this at Step 2 once the insurer asks.</div></div>
-   ${b.pg.on?fld('Parent entity giving the surety <span class="req">*</span>',sel(b,'pg.entity',ents,'Choose'),entOf(b.entity)?.parent?'Parent in the entity master: '+esc(entOf(b.entity).parent):'Set the parent in Masters → Legal entities to fill this automatically.')+fld('Form of surety',sel(b,'pg.type',PG_TYPES))+fld('Note',inp(b,'pg.note','text','placeholder="e.g. ICICI asked for ZW corporate guarantee as JV has no line"')):''}`}
-const _df=CH.df;CH.df=el=>{const b=ui.draft;if(b&&!b.pg)b.pg=blankPg();if(b&&el.dataset.f==='pg.on'&&el.checked&&!b.pg.entity)b.pg.entity=entOf(b.entity)?.parent||'';_df(el)};
-function addPgDocs(b){if(!b.pg?.on||!b.insurer)return;b.insDocs=b.insDocs||[];PG_DOCS.forEach(([n,o])=>{if(!b.insDocs.some(d=>d.name===n))b.insDocs.push({name:n,owner:o,file:null,remark:'',pg:true})})}
-function pgLine(b,team){const on=b.pg?.on;return `<div class="note ${on?'i':''}" style="margin-top:10px">${on?`<b>Surety from parent:</b> ${esc(pgText(b))}${b.pg.note?' · '+esc(b.pg.note):''}. Parent guarantee documents are added to the insurer pack.`:`Bond in the name of ${esc(b.entity)}, no parent surety.`}${team&&!b.insPackOk?` <button class="btn sm" data-a="pgOpen" style="margin-left:6px">${on?'Change parent surety':'Insurer asks for parent surety'}</button>`:''}</div>`}
-A.pgOpen=()=>{const b=bond(ui.bond),pg=b.pg||blankPg(),ents=MA('entities').map(e=>e.name).filter(n=>n!==b.entity);ui.modal={kind:'pg'};
-  modal(`<h2>Surety from the parent entity</h2><p class="lead">${esc(b.entity)} is the applicant. Record the parent entity the insurer wants as surety.</p>
-  <label class="toggle"><input type="checkbox" id="pgOn" ${pg.on?'checked':''}> Insurer needs a parent surety</label>
-  <div class="grid" style="margin-top:12px">${fld('Parent entity','<select id="pgEnt">'+opts(ents,pg.entity||entOf(b.entity)?.parent||'','Choose')+'</select>')}${fld('Form of surety','<select id="pgType">'+opts(PG_TYPES,pg.type)+'</select>')}${fld('Note',`<input id="pgNote" value="${esc(pg.note||'')}">`,'','full')}</div>
-  <div class="foot"><button class="btn" data-a="closeModal">Back</button><button class="btn p" data-a="pgSave">Save</button></div>`)};
-A.pgSave=()=>{const b=bond(ui.bond),on=$('#pgOn').checked,ent=val('pgEnt');if(on&&!ent)return toast('Choose the parent entity.',1);
-  b.pg={on,entity:on?ent:'',type:val('pgType'),note:val('pgNote')};if(on)addPgDocs(b);else b.insDocs=(b.insDocs||[]).filter(d=>!d.pg||d.file);
-  closeModal();blog(b,on?'Insurer asked for parent surety: '+pgText(b)+'.':'Parent surety removed.');save();render()};
-const _pick=A.pickInsGo;A.pickInsGo=()=>{_pick();const b=bond(ui.bond);if(b?.pg?.on){addPgDocs(b);save();render()}};
-REG_COLS.push({k:'pg',l:'Parent surety',g:b=>b.pg?.on?b.pg.entity:''});
+/* parent entity surety removed (v25) */
+function pgLine(b,team){return ''}
 </script>
 <script>
 /* ============ match uploaded files to checklist documents (names do not need to match) ============ */
@@ -1309,7 +1290,7 @@ A.packZip=async()=>{const b=bond(ui.bond);const f=await pickFiles(true);if(!f.le
 /* ============ Masters (New / Edit / Delete, newest on top) ============ */
 const typesL=()=>MA('bondTypes').map(t=>t.name);
 const MDEF={
- entities:{l:'Legal entities',d:'Companies that take bonds. Currency and geography fill into requests.',f:[['name','Legal name','text',1],['code','Entity code','text',1],['currency','Currency','sel',1,()=>MA('currencies').map(c=>c.code)],['geography','Geography','sel',0,()=>MA('geos').map(g=>g.name)],['parent','Parent entity','sel',0,()=>MA('entities').map(e=>e.name)]],
+ entities:{l:'Legal entities',d:'Companies that take bonds. Currency and geography fill into requests.',f:[['name','Legal name','text',1],['code','Entity code','text',1],['currency','Currency','sel',1,()=>MA('currencies').map(c=>c.code)],['geography','Geography','sel',0,()=>MA('geos').map(g=>g.name)]],
    used:r=>S.bonds.filter(b=>b.entity===r.name).length+M('bus').filter(x=>x.entity===r.name).length},
  bus:{l:'Business units',d:'BUs that raise requests, with their BU Finance point of contact.',f:[['name','Business unit','text',1],['finName','BU Finance POC','text'],['finEmail','BU Finance email','text'],['entity','Default legal entity','sel',0,()=>MA('entities').map(e=>e.name)]],
    used:r=>S.bonds.filter(b=>b.bu===r.name).length+ACCESS.users.filter(u=>u.bu===r.name).length},
@@ -1835,7 +1816,7 @@ piSheet=function(b,p,draft){const c=curOf(b),e=entOf(b.entity)||{name:b.entity};
   <div class="shd"><div><h3>PROFORMA INVOICE</h3><div class="ssub">${draft?'Draft preview of the figures entered in Bond Desk':'As recorded in Bond Desk from the insurer\'s PI'}</div></div>
    <div class="smk"><span>PI number</span><b>${esc(p.no||'—')}</b><span>PI date</span><b>${p.date?fd(p.date):'—'}</b><span>Bond request</span><b>${esc(b.ref||'')}</b></div></div>
   <div class="sbox"><div><h4>ISSUED BY (INSURER)</h4><p><b>${esc(p.insurerName||b.insurer||'—')}</b><br>${b.broker&&b.broker!=='Direct'?'Through '+esc(b.broker)+'<br>':''}GSTIN: ${esc(p.insurerGstin||gstinOfIns(b.insurer)||'—')}${p.account?'<br>Pay to: '+esc(p.bank||'')+' '+mask(p.account)+(p.ifsc?' · '+esc(p.ifsc):''):''}</p></div>
-   <div><h4>BILLED TO</h4><p><b>${esc(e.name)}</b>${b.pg?.on?'<br>Surety: '+esc(b.pg.entity)+' (parent)':''}<br>GSTIN: ${esc(p.billedGstin||'not shown on PI')} ${p.billedGstin&&p.billedGstin===gstinOfEnt(b.entity)?'<span class="sok">✓</span>':'<span class="ser">✗</span>'}</p></div></div>
+   <div><h4>BILLED TO</h4><p><b>${esc(e.name)}</b><br>GSTIN: ${esc(p.billedGstin||'not shown on PI')} ${p.billedGstin&&p.billedGstin===gstinOfEnt(b.entity)?'<span class="sok">✓</span>':'<span class="ser">✗</span>'}</p></div></div>
   <table><thead><tr><th>Description</th><th class="r">Amount (${esc(c)})</th></tr></thead><tbody>
    <tr><td>Net premium for ${esc(b.type)} of ${money(b.amount,c)} favouring ${esc(b.beneficiary||b.cust)}<br><span class="sg">Period ${fd(b.start)} to ${fd(b.expiry)} · claim till ${fd(b.claim)}${b.quote?.rate!=null?' · rate '+b.quote.rate+'%':''}</span></td><td class="r">${full(p.premium,c)}</td></tr>
    ${gstRows(p,c)}<tr class="t"><td>Total payable</td><td class="r">${full(p.total,c)}</td></tr></tbody></table>
@@ -2227,6 +2208,18 @@ function learnFrom(b){const s=b.learnSnap;if(!s)return 0;let n=0;S.m.learnRules=
     else S.m.learnRules.unshift({id:uid('m'),format:fmt,docType:s.doc,field:l,rule,after:after||'',example:exm,uses:0,active:true,createdAt:now(),createdBy:me().name});n++});
   if(n)audit('Masters','Reading rules learned',fmt,n+' rule(s) from '+s.file);delete b.learnSnap;return n}
 const _sr24=A.submitReq;A.submitReq=()=>{const b=ui.draft;_sr24();if(!b||b.status!=='open'||!b.learnSnap)return;const n=learnFrom(b);save();if(n)toast('Learned '+n+' reading rule(s) from your corrections. See Masters → Learned reading rules.')};
+</script>
+<script>
+/* ---------- v25: parent entity surety removed; delete a document row in the bond request ---------- */
+const _mb20=migrateBond;migrateBond=function(b){const r=_mb20(b)||b;if(r.pg){delete r.pg;if(r.insDocs)r.insDocs=r.insDocs.filter(d=>!d.pg||d.file)}return r};
+const _ll25=loadLocal;loadLocal=async function(){await _ll25();if(S&&S.bonds){S.bonds.forEach(b=>migrateBond(b));if(MODE==='local'){save();render()}}};
+const _tc20=typeChanged;typeChanged=function(b){_tc20(b);const r=b.rmDocs;if(!r)return;if(r.type===b.type)b.reqDocs=b.reqDocs.filter(d=>!r.names.includes(d.name));else delete b.rmDocs};
+A.slotDel=el=>{const b=ui.draft,i=+el.dataset.i,d=b?.reqDocs[i];if(!d)return;
+  const go=()=>{b.reqDocs.splice(i,1);if(!d.extra){if(!b.rmDocs||b.rmDocs.type!==b.type)b.rmDocs={type:b.type,names:[]};if(!b.rmDocs.names.includes(d.name))b.rmDocs.names.push(d.name)}
+    blog(b,'Document deleted from the request checklist: '+d.name+(d.mandatory?' (was mandatory)':'')+'.');keepDraft(b);render();toast(d.name+' deleted from this request.')};
+  if(d.mandatory||d.file)confirmBox('Delete this document?',esc(d.name)+(d.mandatory?' is mandatory for '+esc(b.type||'this bond type')+'.':'')+(d.file?' Its uploaded file is removed too.':'')+' It is deleted from this request only; the master checklist does not change.','Delete',go,{danger:true});else go()};
+A.slotRestore=el=>{const b=ui.draft,r=b?.rmDocs;if(!r)return;const n=r.names[+el.dataset.i];if(!n)return;r.names.splice(+el.dataset.i,1);
+  const s=slotsFor(b.type).find(x=>x.name===n);if(s&&!b.reqDocs.some(x=>x.name===n)){b.reqDocs.push(s);const o=slotsFor(b.type).map(x=>x.name),ix=x=>{const k=o.indexOf(x.name);return k<0?999:k};b.reqDocs.sort((x,y)=>ix(x)-ix(y))}blog(b,'Document restored to the request checklist: '+n+'.');keepDraft(b);render()};
 </script>
 <script>boot();</script>
 
