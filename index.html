@@ -3046,6 +3046,25 @@ function fuzzyBox(pages,value){const tk=String(value||'').toLowerCase().split(/[
     const sc=Math.min(1,m/tk.length);if(sc>=0.6&&(!best||sc>best.sc))best={sc,box:boxOf(p,used)}}});return best?best.box:null}
 const _fb30=findBox;findBox=function(pages,value,type){return _fb30(pages,value,type)||(type==='text'||type==='code'?fuzzyBox(pages,value):null)};
 </script>
+<script>
+/* ============ v32: a draft is saved only after the user enters something; Discard draft on new / extension / amendment ============ */
+hasContent=function(b){return !!b&&!!b.touched};
+const touch=()=>{if(ui.route==='request'&&ui.draft&&ui.draft.status==='draft')ui.draft.touched=true};
+document.addEventListener('input',e=>{if(e.target.closest&&e.target.closest('#view'))touch()},true);
+document.addEventListener('change',e=>{if(e.target.closest&&e.target.closest('#view'))touch()},true);
+['slotUp','slotDel','slotClear','packUp','addSlotGo','pvMode','pMode','ocrPick','ocrSample','slotRestore'].forEach(k=>{const f=A[k];if(f)A[k]=(...a)=>{touch();return f(...a)}});
+const _rt32=runTenderOCR;runTenderOCR=async function(file){touch();return _rt32(file)};
+const _vr32=VIEWS.request;VIEWS.request=()=>{const h=_vr32(),b=ui.draft;if(!b||b.status!=='draft')return h;
+  return h.split('<button class="btn" data-a="saveDraft">Save draft</button>').join(`<button class="btn d" data-a="discardDraft" title="Throw this ${esc((KIND_L[b.kind]||'request').toLowerCase())} draft away">🗑 Discard draft</button><button class="btn" data-a="saveDraft">Save draft</button>`)};
+A.discardDraft=()=>{const b=ui.draft;if(!b)return;const saved=S.bonds.includes(b)||(ui._all||[]).includes(b),parent=b.parentId,kind=KIND_L[b.kind]||'request';
+  const go2=()=>{if(saved){S.bonds=S.bonds.filter(x=>x!==b);del('bonds/'+b.id);audit('Bond request','Draft discarded','',kind+(b.type?' · '+b.type:''));save()}ui.draft=null;XF.clear();ui.ocr='';ui.reqErr=null;ui.dv=null;
+    if(parent&&bond(parent))go('bond',{bond:parent});else if(ui.hist.length&&ui.hist.at(-1).route!=='request')A.goBack();else go('overview');toast(saved?'Draft discarded.':'Nothing was saved.')};
+  if(!saved)return go2();confirmBox('Discard this draft?','The '+esc(kind.toLowerCase())+' draft'+(b.type?' for '+esc(b.type):'')+(b.beneficiary?' · '+esc(b.beneficiary):'')+' and anything uploaded to it are removed. This cannot be undone.','Discard draft',go2,{danger:true})};
+/* one-time clean-up of empty drafts that were saved automatically before this fix */
+function v32clean(){if(ui._v32||!S)return;ui._v32=true;const all=ui._all||S.bonds,empty=all.filter(b=>b.status==='draft'&&b.kind==='new'&&!b.touched&&!b.type&&!b.amount&&!b.beneficiary&&!b.project&&!b.cust&&!b.remarks&&!(b.reqDocs||[]).some(d=>d.file));
+  if(!empty.length)return;empty.forEach(b=>{const i=all.indexOf(b);if(i>=0)all.splice(i,1);del('bonds/'+b.id)});if(ui.draft&&empty.includes(ui.draft))ui.draft=null;audit('Bond request','Empty drafts removed','',empty.length+' draft(s) with nothing entered');save()}
+const _r32=render;render=function(){if(S&&(MODE==='shared'||MODE==='local'))v32clean();_r32()};
+</script>
 <script>boot();</script>
 
 </body></html>
