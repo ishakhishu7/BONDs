@@ -1,5 +1,4 @@
-<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Zetwerk Bond Desk</title></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>Zetwerk Bond Desk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1112,7 +1111,7 @@ A.withdraw=()=>confirmBox('Withdraw this request?','The request stops here and i
 function details(b){const c=curOf(b);return `<div class="panel"><h2>Request details</h2><div class="kv">
   <div><span>Business unit</span><b>${esc(b.bu||'—')}</b></div><div><span>BU Finance (POC)</span><b>${esc(b.financePoc||'—')}</b></div><div><span>Legal entity (applicant)</span><b>${esc(b.entity||'—')}</b></div><div><span>Geography · currency</span><b>${esc(b.geography||'—')} · ${esc(c)}</b></div>
   <div><span>Customer</span><b>${esc(b.cust||'—')}</b></div><div><span>Beneficiary</span><b>${esc(b.beneficiary||'—')} ${b.benClass?'· '+esc(b.benClass):''}</b></div><div><span>Project</span><b>${esc(b.project||'—')}</b></div><div><span>Tender / contract</span><b>${esc(b.tenderRef||'—')}</b></div>
-  <div><span>Project status</span><b>${esc(b.projectStatus||'—')}${b.pct?' · '+esc(b.pct)+'%':''}</b></div><div><span>Requirement status</span><b>${esc(b.reqStatus||'—')}</b></div><div><span>Contract value</span><b>${money(b.contractValue,c)}</b></div><div><span>Required by</span><b>${fd(b.requiredBy)}</b></div>
+  <div><span>Project status</span><b>${esc(b.projectStatus||'—')}${b.pct?' · '+esc(b.pct)+'%':''}</b></div><div><span>Requirement status</span><b>${esc(b.reqStatus||'—')}</b></div><div><span>Bond type</span><b>${esc(b.type||'—')}</b></div><div><span>Bond amount</span><b>${money(b.amount,c)}</b></div><div><span>Contract value</span><b>${money(b.contractValue,c)}</b></div><div><span>Required by</span><b>${fd(b.requiredBy)}</b></div>
   <div><span>Bond period</span><b>${fd(b.start)} → ${fd(b.expiry)}</b></div><div><span>Claim expiry</span><b>${fd(b.claim)}</b></div>${b.period?.mode==='bid'&&b.period.sub?`<div><span>Bid calculation</span><b>${fd(b.period.sub)} + ${b.period.validityMode==='date'?dBetween(b.period.sub,b.period.validityDate):b.period.validity||0} validity + ${b.period.cond||0} + ${b.period.add||0} days</b></div>`:''}
   ${b.quote?`<div><span>Quote</span><b>${b.quote.rate}% · ${full(b.quote.premium,c)}</b></div>`:''}${b.changes&&b.kind!=='new'?`<div><span>Requested change</span><b>${esc([b.changes.expiry!==bond(b.parentId)?.expiry?'expiry '+fd(b.changes.expiry):'',b.changes.claim?'claim '+fd(b.changes.claim):'',b.kind==='amd'&&b.changes.amount!=null?'amount '+money(b.changes.amount,c):'',b.changes.wording?'wording':''].filter(Boolean).join(' · '))}</b></div>`:''}</div>
   ${b.remarks?`<div class="note i" style="white-space:pre-wrap">${esc(b.remarks)}</div>`:''}${b.wording?`<details><summary class="mu">Bond wording</summary><p style="white-space:pre-wrap">${esc(b.wording)}</p></details>`:''}
@@ -2432,7 +2431,7 @@ function pickLive(kind){const L=S.bonds.filter(b=>b.kind==='new'&&b.status==='is
   const rows=ftRows(T),lbl=kind==='ext'?'Raise extension':'Raise amendment';
   return `<div class="panel"><h2>${lbl}</h2><p class="lead">Pick the live bond. You can also raise it from the top of any live bond request.</p>${ftBar(T,'Search bond, beneficiary, insurer…')}</div>
   <div class="mu" style="margin-bottom:6px">Showing ${rows.length} of ${L.length} live bonds</div>
-  <div class="tw"><table><thead><tr>${ftHead(T)}<th class="stk"></th></tr></thead><tbody>${rows.map(b=>{const d=dBetween(TODAY,b.expiry);return `<tr><td class="w"><button class="btn link" data-a="openBond" data-id="${b.id}">${esc(b.ref)}</button></td><td>${esc(b.final?.bondNo||'')}</td><td>${esc(b.bu||'')}</td><td class="w">${esc(b.type||'')}</td><td>${esc(b.beneficiary||b.cust||'')}</td><td>${esc(b.insurer||'')}</td><td class="n w">${money(b.amount,curOf(b))}</td><td class="w">${fd(b.expiry)}${d!=null&&d>=0&&d<=(+S.settings.expiryWarn||60)?' '+pill(d+' days','wa'):''}</td><td>V${b.version||1}</td><td class="stk"><button class="btn sm p" data-a="raiseFor" data-id="${b.id}" data-k="${kind}">${lbl}</button></td></tr>`}).join('')||'<tr><td colspan="10" class="empty">No live bonds you can see.</td></tr>'}</tbody></table></div>`}
+  <div class="tw"><table><thead><tr>${ftHead(T)}<th class="stk"></th></tr></thead><tbody>${rows.map(b=>{const d=dBetween(TODAY,b.expiry);return `<tr><td class="w"><button class="btn link" data-a="openBond" data-id="${b.id}">${esc(b.ref)}</button></td><td>${esc(b.final?.bondNo||'')}</td><td>${esc(b.bu||'')}</td><td class="w">${esc(b.type||'')}</td><td>${esc(b.beneficiary||b.cust||'')}</td><td>${esc(b.insurer||'')}</td><td class="n w">${money(b.amount,curOf(b))}</td><td class="w">${fd(b.expiry)}${d!=null&&d>=0&&d<=(+S.settings.expiryWarn||60)?' '+pill(d+' days','wa'):''}</td><td class="w"><button class="btn link" data-a="verOpen" data-id="${b.id}">V${b.version||1}</button></td><td class="stk"><button class="btn sm p" data-a="raiseFor" data-id="${b.id}" data-k="${kind}">${lbl}</button></td></tr>`}).join('')||'<tr><td colspan="10" class="empty">No live bonds you can see.</td></tr>'}</tbody></table></div>`}
 VIEWS.newExt=()=>pickLive('ext');VIEWS.newAmd=()=>pickLive('amd');
 A.raiseFor=el=>{autoSaveDraft();ui.bond=el.dataset.id;A.raise(el)};
 VIEWS.drafts=()=>{const D=myDrafts();return `<div class="panel"><div class="row c" style="justify-content:space-between"><div><h2>My drafts</h2><span class="mu">Saved automatically while you fill a request. Resume or delete them here.</span></div><button class="btn p" data-go="newBond">New bond</button></div></div>`+
@@ -3064,6 +3063,555 @@ A.discardDraft=()=>{const b=ui.draft;if(!b)return;const saved=S.bonds.includes(b
 function v32clean(){if(ui._v32||!S)return;ui._v32=true;const all=ui._all||S.bonds,empty=all.filter(b=>b.status==='draft'&&b.kind==='new'&&!b.touched&&!b.type&&!b.amount&&!b.beneficiary&&!b.project&&!b.cust&&!b.remarks&&!(b.reqDocs||[]).some(d=>d.file));
   if(!empty.length)return;empty.forEach(b=>{const i=all.indexOf(b);if(i>=0)all.splice(i,1);del('bonds/'+b.id)});if(ui.draft&&empty.includes(ui.draft))ui.draft=null;audit('Bond request','Empty drafts removed','',empty.length+' draft(s) with nothing entered');save()}
 const _r32=render;render=function(){if(S&&(MODE==='shared'||MODE==='local'))v32clean();_r32()};
+</script>
+<style>
+.nav button.sub3{padding-left:34px}
+.nav .chev{flex:none;opacity:.6;font-size:.8em}
+:root[data-nav="rail"] .side:not(:hover):not(:focus-within) .nav .chev{display:none}
+:root[data-nav="rail"] .side:not(:hover):not(:focus-within) .nav button.sub3{padding-left:0}
+</style>
+<script>
+/* ============ v33: side menu — one "Bonds" entry that opens New / Raise extension / Raise amendment; My drafts moved under Bond requests ============ */
+A.navBonds=()=>{const nav=$('#nav'),on=['newBond','newExt','newAmd'].some(r=>nav&&nav.querySelector('[data-go="'+r+'"].on')),cur=ui.navBonds!==undefined?ui.navBonds:on;ui.navBonds=!cur;renderNav()};
+const _go33=go;go=function(r,x){if(r==='newBond'||r==='newExt'||r==='newAmd')ui.navBonds=undefined;_go33(r,x)};
+const _rn33=renderNav;renderNav=function(){_rn33();
+  const nav=$('#nav');if(!nav||(PREFS.module||'bonds')!=='bonds')return;
+  const sub=['newBond','newExt','newAmd'].map(r=>nav.querySelector('[data-go="'+r+'"]')).filter(Boolean);
+  const dr=nav.querySelector('[data-go="drafts"]');
+  if(dr){const at=nav.querySelector('[data-go="changes"]')||nav.querySelector('[data-go="register"]');if(at)at.insertAdjacentElement('afterend',dr);else dr.remove()}
+  nav.querySelectorAll('.nav-g').forEach(h=>{if(h.textContent.trim()==='New'&&!(h.nextElementSibling&&h.nextElementSibling.tagName==='BUTTON'&&sub.includes(h.nextElementSibling)))h.remove()});
+  if(!sub.length)return;
+  const hd=sub[0].previousElementSibling;if(hd&&hd.classList.contains('nav-g')&&hd.textContent.trim()==='New')hd.remove();
+  const subOn=sub.some(b=>b.classList.contains('on')),open=ui.navBonds!==undefined?ui.navBonds:subOn;
+  const t=document.createElement('button');t.dataset.a='navBonds';t.title='Bonds';t.setAttribute('aria-expanded',open?'true':'false');
+  t.innerHTML='<span class="ic" aria-hidden="true">'+(NAV_IC.newBond||'+')+'</span><span class="lb">Bonds</span><span class="chev" aria-hidden="true">'+(open?'▾':'▸')+'</span>';
+  sub[0].before(t);
+  sub.forEach(b=>{b.classList.add('sub3');b.style.display=open?'':'none'});
+  const pj=nav.querySelector('[data-go="projects"]');if(pj)sub[sub.length-1].after(pj);
+};
+</script>
+<style>
+/* v35: next-action banner, green for uploaded documents, simple timeline, project + people strip */
+.nb{display:flex;align-items:center;gap:14px;border-radius:var(--r2);padding:14px 18px;margin-bottom:16px;border:1px solid var(--line);border-left:6px solid var(--line3);background:var(--panel)}
+.nb.act{background:var(--acs);border-color:color-mix(in srgb,var(--ac) 45%,transparent);border-left-color:var(--ac)}
+.nb.wait{background:var(--was);border-left-color:var(--wa)}
+.nb-i{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-size:18px;flex:none;background:var(--panel);border:2px solid var(--line3)}
+.nb.act .nb-i{background:var(--ac);color:#fff;border-color:var(--ac)}
+.nb-t{flex:1;min-width:0}.nb-k{font-weight:700;font-size:1.02rem}.nb.act .nb-k{color:var(--ac)}
+.nb-t ul{margin:4px 0 2px;padding-left:18px}.nb-t li{margin:2px 0}
+tr.dn td{background:var(--was)}tr.dn td:first-child{box-shadow:inset 4px 0 0 var(--wa)}
+tr.dg td{background:var(--oks)}tr.dg td:first-child{box-shadow:inset 4px 0 0 var(--ok)}
+.sub.cur{border-color:var(--ac)!important;box-shadow:0 0 0 3px var(--acs)}
+.sub.cur>.sub-h .k{background:var(--ac);color:#fff;border-color:var(--ac)}
+.sub.done{border-color:color-mix(in srgb,var(--ok) 45%,var(--line))}
+.tl35{list-style:none;margin:0;padding:0;display:flex}
+.tl35 li{flex:1;min-width:0;position:relative}
+.tl35 li::after{content:"";position:absolute;top:19px;left:calc(50% + 22px);right:calc(-50% + 22px);height:3px;background:var(--line);border-radius:2px}
+.tl35 li:last-child::after{display:none}.tl35 li.done::after{background:var(--ok)}
+.tl-b{background:none;border:0;width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0 4px 6px;cursor:pointer;color:inherit;font:inherit;border-radius:10px}
+.tl-b:hover{background:var(--hover)}
+.tl-dot{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;border:2px solid var(--line3);background:var(--panel);color:var(--mu);position:relative;z-index:1}
+.tl35 li.done .tl-dot{background:var(--ok);border-color:var(--ok);color:#fff}
+.tl35 li.cur .tl-dot{background:var(--ac);border-color:var(--ac);color:#fff;box-shadow:0 0 0 5px var(--acs)}
+.tl35 li.skip .tl-dot{border-style:dashed}
+.tl-l{font-weight:600;font-size:.9rem;text-align:center}.tl-w{font-size:.76rem;color:var(--mu);text-align:center}
+.tl35 li.cur .tl-l,.tl35 li.cur .tl-w{color:var(--ac);font-weight:700}
+.tl35 li.vsel .tl-b{background:var(--acs)}
+@media (max-width:700px){.tl35{flex-direction:column}.tl35 li::after{display:none}.tl-b{flex-direction:row;gap:10px;text-align:left}.tl-l,.tl-w{text-align:left}}
+.strip{display:grid;gap:8px;padding:12px 16px;margin-bottom:16px}
+.strip .row{gap:8px;flex-wrap:wrap}.strip .k{font-weight:600;min-width:64px}
+.pchip{display:inline-flex;gap:6px;align-items:center;border:1px solid var(--line);background:var(--soft);border-radius:20px;padding:2px 10px;font-size:.86rem}
+.pchip.ed{border-color:color-mix(in srgb,var(--ok) 50%,var(--line))}
+</style>
+<script>
+/* ============ v35: pending action highlight, green when uploaded, simple timeline, link bonds to a project, POCs (view / full edit) ============ */
+const dbAll=()=>ui._all||S.bonds;
+/* ---------- 1. documents: amber until the file is uploaded, then light green ---------- */
+docTable=function(b,pack,slots,editable){const r=openReq(b,pack),req=r&&!r.submittedAt?r.docs:null,mk=isMaker(b),team=can('verify','edit');
+  return tbl(`<th>Document</th>${pack==='insurer'?'<th>Owner</th>':'<th>Required</th>'}<th>Remarks</th><th>File</th>`,slots.map((d,i)=>{const asked=req&&req.includes(d.name),got=asked&&d.file&&String(d.file.at||'')>String(r.at||''),canUp=editable&&(team||(mk&&(asked||pack==='insurer')));
+    return `<tr class="${asked?(got?'dg':'dn'):''}"><td><b>${esc(d.name)}</b>${asked?' '+(got?pill('Uploaded','ok'):pill('Upload needed','wa')):''}</td><td>${pack==='insurer'?esc(d.owner||''):d.mandatory?pill('Mandatory','wa'):pill('Optional','gr')}</td><td>${esc(d.remark||'')}</td>
+    <td>${fileChip(d.file)}${d.file?.at?`<div class="mu">${fdt(d.file.at)} · ${esc(d.file.by||'')}</div>`:''}${canUp?`<div style="margin-top:4px"><button class="btn sm ${asked&&!got?'p':''}" data-a="docUp" data-p="${pack}" data-i="${i}">${d.file?'Replace':'Upload'}</button></div>`:''}</td></tr>`}).join(''))};
+
+/* ---------- 2. next-action banner ---------- */
+function nextBanner(b){if(!b)return '';let p=[];if(b.status==='open')p=pending(b);else if(b.status==='issued'&&b.step==='closure'&&!b.taxInv)p=[{who:'team',text:'Upload the tax invoice'}];if(!p.length)return '';
+  const mine=p.filter(x=>mineWho(b,x.who)),others=p.filter(x=>!mineWho(b,x.who)),ix=stepIx(b.step),S_=STEPS[ix]||STEPS[0],nx=STEPS[ix+1],act=mine.length>0,who=[...new Set((act?others:p).map(x=>WHO_L[x.who]))].join(', ');
+  return `<div class="nb ${act?'act':'wait'}" role="status"><div class="nb-i" aria-hidden="true">${act?'➜':'⏳'}</div><div class="nb-t"><div class="nb-k">${act?'Your action':'Waiting on '+esc(who)} · Step ${ix+1} ${esc(S_.l)}</div><ul>${(act?mine:p).map(x=>'<li>'+esc(x.text)+'</li>').join('')}</ul>${act&&others.length?`<div class="mu">Then waiting on ${esc(who)}</div>`:''}${nx?`<div class="mu">Next step: ${esc(nx.l)}</div>`:''}</div>${act?'<button class="btn hl" data-a="goAct">Do it now ↓</button>':''}</div>`}
+A.goAct=()=>{const el=$('.bp-main .sub.cur')||$('.bp-main>.panel:not(.sec)');if(el)el.scrollIntoView({behavior:'smooth',block:'center'})};
+
+/* ---------- 3. simple timeline ---------- */
+stepper=function(cur){const i=stepIx(cur),b=ui.route==='bond'?bond(ui.bond):null,v=b&&ui.viewStepFor===b.id?ui.viewStep:null,off=S&&!S.settings.approvalOn;
+  return `<ol class="tl35" aria-label="Progress">${STEPS.map((s,k)=>{const st=k<i?'done':k===i?'cur':'todo',skip=s.k==='approval'&&off,on=v?v===s.k:k===i;
+    return `<li class="${st} ${skip?'skip':''} ${on&&b?'vsel':''}" ${k===i?'aria-current="step"':''}><button class="tl-b" type="button" ${b?`data-a="viewStep" data-k="${s.k}" title="View ${esc(s.l)}"`:'tabindex="-1"'}><span class="tl-dot">${st==='done'?'✓':k+1}</span><span class="tl-l">${esc(s.l)}</span><span class="tl-w">${skip?'Not required':st==='cur'?'You are here · '+esc(s.who):esc(s.who)}</span></button></li>`}).join('')}</ol>`};
+
+/* ---------- 4. link bonds to a project ---------- */
+const projName=b=>String(b.projectLink||b.project||'').trim(),projKey=b=>projName(b).toLowerCase().replace(/\s+/g,' ');
+const projBonds=b=>{const k=projKey(b);return k?S.bonds.filter(x=>x.status!=='draft'&&projKey(x)===k):[]};
+A.projOpen=()=>{const b=bond(ui.bond);if(!b)return;const L=projBonds(b);ui.modal={kind:'proj'};
+  modal(`<h2>Bonds on project: ${esc(projName(b)||'—')}</h2><p class="lead">Every bond, extension and amendment tagged to this project.</p>${tbl('<th>Bond request</th><th>Kind</th><th>Bond type</th><th>Version</th><th class="n">Amount</th><th>Status</th><th>Expiry</th>',L.map(x=>`<tr${x.id===b.id?' class="dg"':''}><td class="w"><button class="btn link" data-a="openBond" data-id="${x.id}">${esc(x.ref||'Draft')}</button></td><td>${esc(KIND_L[x.kind]||'')}</td><td>${esc(x.type||'')}</td><td>${esc(verOf(x))}</td><td class="n w">${money(x.amount,curOf(x))}</td><td>${statusPill(x)}</td><td class="w">${fd(x.expiry)}</td></tr>`).join(''),'No bonds tagged to a project yet.')}<div class="foot"><button class="btn p" data-a="closeModal">Close</button></div>`,true)};
+A.projLink=()=>{const b=bond(ui.bond);if(!b)return;const names=[...new Set(S.bonds.filter(x=>x.status!=='draft').map(projName).filter(Boolean))].sort();ui.modal={kind:'projL'};
+  modal(`<h2>Link this bond to a project</h2><p class="lead">Bonds with the same project name are grouped automatically. Use this to tag a bond whose project is typed differently.</p><div class="grid">${fld('Existing project','<select id="pjSel">'+opts(names,projName(b),'Choose')+'</select>')}${fld('Or a new project name','<input id="pjNew" placeholder="e.g. BPCL Uran storage tanks">')}</div><div class="foot">${b.projectLink?'<button class="btn d" data-a="projUnlink">Remove link</button>':''}<button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="projLinkGo">Link</button></div>`)};
+A.projLinkGo=()=>{const b=bond(ui.bond),n=(val('pjNew')||val('pjSel')||'').trim();if(!n)return toast('Choose a project or type a name.',1);b.projectLink=n;blog(b,'Linked to project: '+n+'.','Project');closeModal();save();render();toast('Linked. '+projBonds(b).length+' bond(s) on this project.')};
+A.projUnlink=()=>{const b=bond(ui.bond);delete b.projectLink;blog(b,'Project link removed.','Project');closeModal();save();render()};
+
+/* ---------- 5. POCs: any user or email, view or full edit, any department ---------- */
+const pocList=b=>{const L=[...(b.pocs||[])],par=b.parentId?dbAll().find(x=>x.id===b.parentId):null;if(par)(par.pocs||[]).forEach(p=>{if(!L.some(x=>(x.uid&&x.uid===p.uid)||(x.email&&x.email===p.email)))L.push({...p,inh:1})});return L};
+const pocOf=(b,u)=>{u=u||me();if(!u||!b)return null;const em=String(u.email||'').toLowerCase();return pocList(b).find(p=>(p.uid&&p.uid===u.id)||(p.email&&em&&String(p.email).toLowerCase()===em))||null};
+const pocName=p=>p.uid?(U(p.uid)?.name||'User'):p.email;
+const _buOk35=buOk;buOk=function(b,u){return !!pocOf(b,u||me())||_buOk35(b,u)};
+const _isMaker35=isMaker;isMaker=function(b){const p=pocOf(b);return (p&&p.level==='edit')||_isMaker35(b)};
+const canPoc=b=>isSA()||isMaker(b)||can('verify','edit');
+const pocT=()=>ui.route==='request'&&ui.draft?ui.draft:bond(ui.bond);
+function pocSaved(b,msg){if(b.status==='draft'){b.touched=true;keepDraft(b)}else{blog(b,msg,'Access');save()}render()}
+function pocStrip(b){const cr=b.createdBy&&U(b.createdBy),L=pocList(b),mg=canPoc(b);
+  return `<div class="row c"><span class="k">People</span>${cr?`<span class="pchip ed">${esc(cr.name)} · primary</span>`:`<span class="pchip">${esc(b.requestor||'')} · primary</span>`}${L.map(p=>`<span class="pchip ${p.level==='edit'?'ed':''}" title="${esc(p.email||'')}">${esc(pocName(p))} · ${p.level==='edit'?'full edit':'view'}${p.inh?' (from parent)':''}${p.uid||!p.email?'':' · invited'}</span>`).join('')}${mg?'<button class="btn sm" data-a="pocMng">+ Add / manage POCs</button>':''}</div>`}
+function pocModal(){const b=pocT();if(!b)return;const L=b.pocs||[],have=new Set(L.map(p=>p.uid).filter(Boolean)),users=ACCESS.users.filter(u=>u.active!==false&&u.id!==b.createdBy&&!have.has(u.id));ui.modal={kind:'poc'};
+  modal(`<h2>POCs on this bond</h2><p class="lead">People you add see this bond and its updates, whatever their department. <b>View</b> = read only. <b>Full edit</b> = can act like the requestor (upload, reply, edit, resubmit).</p>
+  ${L.length?tbl('<th>Person</th><th>Access</th><th></th>',L.map((p,i)=>`<tr><td><b>${esc(pocName(p))}</b>${p.uid?`<div class="mu">${esc(U(p.uid)?.email||'')}</div>`:'<div class="mu">Not a user yet: gets access when they sign in with this email</div>'}</td><td><select data-ch="pocLvl" data-i="${i}">${opts([['view','View'],['edit','Full edit']],p.level)}</select></td><td><button class="btn sm d" data-a="pocDel" data-i="${i}">Remove</button></td></tr>`).join('')):'<p class="mu">No POCs added yet.</p>'}
+  <h3 style="margin-top:14px">Add people</h3><div class="grid">${fld('Access for the people below','<select id="pocLv"><option value="edit">Full edit</option><option value="view">View</option></select>')}${fld('Add by email (comma separated)','<input id="pocMail" placeholder="asha@zetwerk.com, ravi@zetwerk.com">')}</div>
+  ${fld('Or pick users',`<input id="pocQ" data-in="pocQ" placeholder="Search name or email" style="margin-bottom:6px"><div class="fl" id="pocUsers" style="max-height:220px">${users.map(u=>`<label class="ck"><input type="checkbox" value="${u.id}"> <b>${esc(u.name)}</b> <span class="mu">${esc(u.email||'')} · ${esc(roleOf(u).name)}${u.bu?' · '+esc(u.bu):''}</span></label>`).join('')||'<span class="mu">Everyone is already added.</span>'}</div>`,'','full')}
+  <div class="foot"><button class="btn" data-a="closeModal">Done</button><button class="btn p" data-a="pocAddGo">Add selected</button></div>`,true)}
+A.pocMng=()=>pocModal();
+CH.pocQ=el=>{const q=el.value.toLowerCase();$$('#pocUsers label').forEach(l=>l.style.display=l.textContent.toLowerCase().includes(q)?'':'none')};
+CH.pocLvl=el=>{const b=pocT(),p=(b.pocs||[])[+el.dataset.i];if(!p)return;p.level=el.value;pocSaved(b,'POC access changed: '+pocName(p)+' → '+(p.level==='edit'?'full edit':'view')+'.');pocModal()};
+A.pocDel=el=>{const b=pocT(),p=(b.pocs||[])[+el.dataset.i];if(!p)return;b.pocs.splice(+el.dataset.i,1);pocSaved(b,'POC removed: '+pocName(p)+'.');pocModal()};
+A.pocAddGo=()=>{const b=pocT(),lv=val('pocLv')||'edit',ids=$$('#pocUsers input:checked').map(x=>x.value),mails=String(val('pocMail')||'').split(/[,;\s]+/).map(x=>x.trim().toLowerCase()).filter(Boolean),bad=mails.filter(x=>!/^\S+@\S+\.\S+$/.test(x));
+  if(bad.length)return toast('Check this email: '+bad[0],1);b.pocs=b.pocs||[];const add=[];
+  const push=o=>{if(o.uid&&b.pocs.some(p=>p.uid===o.uid))return;if(o.email&&b.pocs.some(p=>p.email===o.email||(p.uid&&String(U(p.uid)?.email||'').toLowerCase()===o.email)))return;if(o.uid===b.createdBy)return;b.pocs.push({...o,level:lv,at:now(),by:me().name});add.push(o)};
+  ids.forEach(id=>push({uid:id}));mails.forEach(m=>{const u=ACCESS.users.find(x=>String(x.email||'').toLowerCase()===m);push(u?{uid:u.id}:{email:m})});
+  if(!add.length)return toast('Pick a user or type an email first.',1);pocSaved(b,'POC added ('+(lv==='edit'?'full edit':'view')+'): '+add.map(o=>o.uid?U(o.uid)?.name:o.email).join(', ')+'.');toast(add.length+' POC(s) added.');pocModal()};
+/* new bonds: let people from the BU list see their own requests too, plus POC bonds */
+const _mbRows35=mbRows;mbRows=function(){const f=ui.mb;if(!f||f.sc!=='mine')return _mbRows35();f.sc='all';let L;try{L=_mbRows35()}finally{f.sc='mine'}const u=me();return L.filter(b=>b.createdBy===u.id||b.owner===u.id||pocOf(b,u))};
+
+/* ---------- bond page: banner, project and people strip ---------- */
+const _vb35=VIEWS.bond;VIEWS.bond=()=>{let h=_vb35();const b=bond(ui.bond);if(!b||b.status==='draft')return h;const k=h.indexOf('<div class="bp-grid">');if(k<0)return h;
+  const pn=projName(b),n=projBonds(b).length,lk=canPoc(b)||can('verify','edit');
+  const strip=`<div class="panel strip"><div class="row c"><span class="k">Project</span>${pn?`<b>${esc(pn)}</b><button class="btn sm" data-a="projOpen" title="See every bond tagged to this project">${n} bond${n===1?'':'s'} on this project</button>`:'<span class="mu">No project on this bond</span>'}${lk?`<button class="btn sm" data-a="projLink">${b.projectLink?'Change project link':'Link to a project'}</button>`:''}</div>${pocStrip(b)}</div>`;
+  return h.slice(0,k)+nextBanner(b)+strip+h.slice(k)};
+/* new request form: add POCs while creating */
+const _vr35=VIEWS.request;VIEWS.request=()=>{const h=_vr35(),b=ui.draft;if(!b||b.status!=='draft'||!b.id)return h;const tag='Filled from the BU master; edit if needed.</div></div>',i=h.indexOf(tag);if(i<0)return h;
+  return h.slice(0,i+tag.length)+`<div class="fld full"><label>POCs who can see and work on this bond</label><div class="strip" style="padding:8px 0 0;margin:0">${pocStrip(b)}</div><div class="hint">You are the primary. Add more people by user or email, with View or Full edit. They can be from any department.</div></div>`+h.slice(i+tag.length)};
+</script>
+<style>
+.dtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.dtabs .chip{padding:8px 16px;font-size:.95rem}
+.dt-tot td{font-weight:700;background:var(--soft)}
+td.neg{color:var(--er);font-weight:600}
+.dsub{margin:18px 0 8px;font-size:1.05rem}
+</style>
+<script>
+/* ============ v36: CSO dashboard (from the Surety Bond Tracker): Limit utilisation, Limit utilisation International, Overall, Overall International ============ */
+NAV[0][1].splice(1,0,['dash','CSO dashboard']);
+RPERM.dash=['limits','view'];
+Object.assign(TITLES,{dash:['CSO dashboard','Limit utilisation and the overall bond book, domestic and international']});
+NAV_IC.dash='▦';
+const BT_BASE=['Bid Bond','Advance Bond','Retention Bond','Performance Bond','Additional Security Bond'],BT_INTL=[...BT_BASE,'Financial Guarantee','Customs & Excise Tax'];
+const dashSet=cur=>dbAll().filter(b=>b.kind==='new'&&b.status!=='draft'&&curOf(b)===cur);
+const everIssued=b=>['issued','expired','released'].includes(b.status);
+const validB=b=>b.status==='issued'&&(!b.expiry||String(b.expiry)>=TODAY);
+const lapsedB=b=>b.status==='expired'||(b.status==='issued'&&b.expiry&&String(b.expiry)<TODAY);
+const sumA=L=>L.reduce((a,b)=>a+(+b.amount||0),0);
+const dCols=(L,intl)=>{const base=intl?BT_INTL:BT_BASE;return [...base,...new Set(L.map(b=>b.type).filter(t=>t&&!base.includes(t)))]};
+const dTab=()=>ui.dt||'lim';
+const dCur=()=>{const t=dTab();if(t==='lim'||t==='ov')return 'INR';const o=MA('currencies').map(c=>c.code).filter(c=>c!=='INR');return ui.dcur&&o.includes(ui.dcur)?ui.dcur:(o.includes('USD')?'USD':o[0]||'USD')};
+function limData(cur){const intl=cur!=='INR',uv=+CUR(cur).unitVal||1,L=dashSet(cur),cols=dCols(L,intl);
+  const rows=MA('insurers').filter(i=>(i.currency||'INR')===cur).map(i=>{const mine=L.filter(b=>b.insurer===i.name),val=mine.filter(validB),byT=cols.map(t=>sumA(val.filter(b=>b.type===t))),tot=byT.reduce((a,b)=>a+b,0),lim=(+i.limit||0)*uv,ever=mine.filter(everIssued);
+    return {name:i.name,lim,byT,tot,left:lim-tot,pct:lim?tot/lim*100:0,ever:sumA(ever),n:ever.length}});
+  const T={name:'Total',lim:0,byT:cols.map(()=>0),tot:0,left:0,ever:0,n:0};rows.forEach(r=>{T.lim+=r.lim;T.tot+=r.tot;T.left+=r.left;T.ever+=r.ever;T.n+=r.n;r.byT.forEach((v,i)=>T.byT[i]+=v)});T.pct=T.lim?T.tot/T.lim*100:0;
+  const open=L.filter(b=>b.status==='open'),oByT=cols.map(t=>sumA(open.filter(b=>b.type===t)));
+  return {cur,intl,uv,L,cols,rows,T,open,oByT,oTot:oByT.reduce((a,b)=>a+b,0),valid:L.filter(validB)}}
+function limView(cur){const d=limData(cur),f=v=>(v/d.uv).toLocaleString('en-IN',{maximumFractionDigits:2}),u=CUR(cur),unit=u.symbol+' '+u.unit,warn=limWarn();
+  const bar=p=>`<div class="row c" style="flex-wrap:nowrap;gap:8px;min-width:150px">${rbar(Math.max(0,p),100,p>=100?'er':p>=warn?'wa':'')}<b>${p.toFixed(0)}%</b></div>`;
+  const row=(r,t)=>`<tr class="${t?'dt-tot':''}"><td>${t?'Total':'<b>'+esc(r.name)+'</b>'}</td><td class="n">${f(r.lim)}</td>${r.byT.map(v=>`<td class="n">${v?f(v):'—'}</td>`).join('')}<td class="n"><b>${f(r.tot)}</b></td><td class="n ${r.left<0?'neg':''}">${f(r.left)}</td><td>${bar(r.pct)}</td><td class="n">${f(r.ever)}</td>${d.intl?`<td class="n">${r.n}</td>`:''}</tr>`;
+  const head=`<th>Insurer</th><th class="n">Limit</th>${d.cols.map(c=>`<th class="n">${esc(c)}</th>`).join('')}<th class="n">Total (valid)</th><th class="n">Limit left</th><th>Utilisation</th><th class="n">Issued till date</th>${d.intl?'<th class="n">Bonds issued</th>':''}`;
+  const hot=d.rows.filter(r=>r.lim&&r.pct>=warn);
+  return `<div class="stats"><div class="stat"><small>Total limit</small><strong>${f(d.T.lim)}</strong><span class="s2">${unit} across ${d.rows.length} insurer(s)</span></div><div class="stat"><small>Utilised (valid bonds)</small><strong>${f(d.T.tot)}</strong><span class="s2">${d.T.pct.toFixed(0)}% of the limit</span></div><div class="stat"><small>Limit left</small><strong>${f(d.T.left)}</strong><span class="s2">${hot.length?hot.length+' insurer(s) at or above '+warn+'%':'All below the '+warn+'% alert'}</span></div><div class="stat"><small>In pipeline (open)</small><strong>${f(d.oTot)}</strong><span class="s2">${d.open.length} open request(s)</span></div></div>
+  <div class="panel"><div class="row c" style="justify-content:space-between;gap:10px"><div><h2>Limit utilisation${d.intl?' · International':''}</h2><span class="mu">Valid (issued, not expired) bonds against each insurer's limit. All amounts in ${esc(unit)}.</span></div><div class="acts">${d.intl&&MA('currencies').filter(c=>c.code!=='INR').length>1?`<div class="chips" style="margin:0">${MA('currencies').filter(c=>c.code!=='INR').map(c=>`<button class="chip ${c.code===cur?'on':''}" data-a="dashCur" data-c="${c.code}">${c.code}</button>`).join('')}</div>`:''}<button class="btn" data-a="dashXl">Export to Excel</button></div></div>
+   <div style="margin-top:12px">${tbl(head,d.rows.map(r=>row(r)).join('')+(d.rows.length?row(d.T,1):''),'No insurer is set up in '+cur+'. Add one in Masters.')}</div></div>
+  <div class="panel"><h2>Open requests (pipeline)</h2><span class="mu">Requests in progress, not yet issued, by bond type.</span><div style="margin-top:10px">${tbl('<th></th>'+d.cols.map(c=>`<th class="n">${esc(c)}</th>`).join('')+'<th class="n">Total</th><th class="n">Requests</th>',`<tr><td><b>Overall</b></td>${d.oByT.map(v=>`<td class="n">${v?f(v):'—'}</td>`).join('')}<td class="n"><b>${f(d.oTot)}</b></td><td class="n">${d.open.length}</td></tr>`)}</div></div>
+  <div class="panel"><h2>Valid bonds (${d.valid.length})</h2><div style="margin-top:10px">${repTbl(['Bond request','Beneficiary','BU','Insurer','Type','Amount','Expiry','Days left'],d.valid.sort((a,c)=>String(a.expiry||'9').localeCompare(String(c.expiry||'9'))).slice(0,150).map(b=>[{ref:b},b.beneficiary||b.cust||'',b.bu||'',b.insurer||'',b.type||'',money(b.amount,cur),fd(b.expiry),b.expiry?dBetween(TODAY,b.expiry):'—']),'No valid bonds.')}${d.valid.length>150?'<p class="mu">Showing the first 150. Export has all.</p>':''}</div></div>`}
+function ovView(cur){const intl=cur!=='INR',L=dashSet(cur),uv=+CUR(cur).unitVal||1,f=v=>money(v,cur),live=L.filter(validB),open=L.filter(b=>b.status==='open'),lapsed=L.filter(lapsedB),canc=L.filter(b=>['cancelled','withdrawn','rejected'].includes(b.status)),rel=L.filter(b=>b.status==='released'),prem=L.reduce((a,b)=>a+(premOf(b)||0),0);
+  const quoted=L.filter(b=>b.quote?.premium&&b.amount),rate=quoted.length?quoted.reduce((a,b)=>a+(+b.quote.premium),0)/quoted.reduce((a,b)=>a+(+b.amount),0)*100:null;
+  const grp=k=>{const g={};L.forEach(b=>{const key=(k(b)||'—');const x=g[key]=g[key]||{n:0,live:0,val:0,ever:0,open:0,prem:0};x.n++;if(validB(b)){x.live++;x.val+=+b.amount||0}if(everIssued(b))x.ever+=+b.amount||0;if(b.status==='open')x.open++;x.prem+=premOf(b)||0});return Object.entries(g).sort((a,c)=>c[1].val-a[1].val||c[1].n-a[1].n)};
+  const gt=(title,k,lab)=>{const G=grp(k),mx=Math.max(1,...G.map(x=>x[1].val));return `<div class="panel"><h2>${title}</h2><div style="margin-top:8px">${repTbl([lab,'Requests','Live','Live value','Issued till date','In progress','Premium paid',''],G.map(([n,x])=>[n,x.n,x.live,f(x.val),f(x.ever),x.open,x.prem?f(x.prem):'—',{bar:[x.val,mx],txt:''}]),'Nothing to show.')}</div></div>`};
+  const mk=b=>String(b.final?.start||b.start||'').slice(0,7),months=[];const dn=new Date();for(let i=11;i>=0;i--){const x=new Date(dn.getFullYear(),dn.getMonth()-i,1);months.push(x.getFullYear()+'-'+pad(x.getMonth()+1))}
+  const mv=m=>L.filter(b=>everIssued(b)&&mk(b)===m),mmx=Math.max(1,...months.map(m=>sumA(mv(m)))),ml=m=>new Date(m+'-01T00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'});
+  const soon=live.filter(b=>b.expiry&&dBetween(TODAY,b.expiry)<=90).sort((a,c)=>String(a.expiry).localeCompare(String(c.expiry)));
+  return `<div class="stats"><div class="stat"><small>Bond requests</small><strong>${L.length}</strong><span class="s2">${open.length} in progress</span></div><div class="stat"><small>Live bonds</small><strong>${live.length}</strong><span class="s2">${f(sumA(live))} valid</span></div><div class="stat"><small>Expired / returned</small><strong>${lapsed.length+rel.length}</strong><span class="s2">${lapsed.length} expired · ${rel.length} returned</span></div><div class="stat"><small>Cancelled / dropped</small><strong>${canc.length}</strong><span class="s2">Not taken forward</span></div><div class="stat"><small>Premium paid</small><strong>${prem?f(prem):'—'}</strong><span class="s2">${rate!=null?'Average rate '+rate.toFixed(2)+'% (quoted bonds)':'incl. GST where recorded'}</span></div></div>
+  <div class="panel"><div class="row c" style="justify-content:space-between;gap:10px"><div><h2>Overall${intl?' · International':''}</h2><span class="mu">Every bond request in ${esc(cur)}: live value, issued value and premium, by dimension.</span></div>${intl&&MA('currencies').filter(c=>c.code!=='INR').length>1?`<div class="chips" style="margin:0">${MA('currencies').filter(c=>c.code!=='INR').map(c=>`<button class="chip ${c.code===cur?'on':''}" data-a="dashCur" data-c="${c.code}">${c.code}</button>`).join('')}</div>`:''}</div></div>
+  <div class="ov2"><div>${gt('By business unit',b=>b.bu,'Business unit')}${gt('By insurer',b=>b.insurer,'Insurer')}</div><div>${gt('By bond type',b=>b.type,'Bond type')}${gt('By route / broker',b=>b.insurer?(b.broker||'Direct'):'',' Broker')}</div></div>
+  ${gt('By legal entity',b=>b.entity,'Legal entity')}
+  <div class="panel"><h2>Issued by month (last 12 months)</h2><div style="margin-top:8px">${repTbl(['Month','Bonds','Value',''],months.slice().reverse().map(m=>[ml(m),mv(m).length,f(sumA(mv(m))),{bar:[sumA(mv(m)),mmx],txt:''}]),'Nothing to show.')}</div></div>
+  <div class="panel"><h2>Expiring in the next 90 days (${soon.length})</h2><div style="margin-top:8px">${repTbl(['Bond request','Beneficiary','BU','Insurer','Amount','Expiry','Days'],soon.map(b=>[{ref:b},b.beneficiary||b.cust||'',b.bu||'',b.insurer||'',f(b.amount),fd(b.expiry),{pill:[dBetween(TODAY,b.expiry)+' days',dBetween(TODAY,b.expiry)<=15?'er':'wa']}]),'Nothing expires in the next 90 days.')}</div></div>`}
+VIEWS.dash=()=>{const t=dTab(),cur=dCur(),T=[['lim','Limit utilisation'],['limI','Limit utilisation · International'],['ov','Overall'],['ovI','Overall · International']];
+  return `<div class="dtabs" role="tablist">${T.map(([k,l])=>`<button class="chip ${k===t?'on':''}" role="tab" aria-selected="${k===t}" data-a="dashTab" data-k="${k}">${l}</button>`).join('')}</div>`+(t==='lim'||t==='limI'?limView(cur):ovView(cur))};
+A.dashTab=el=>{ui.dt=el.dataset.k;render()};A.dashCur=el=>{ui.dcur=el.dataset.c;render()};
+A.dashXl=()=>{const cur=dCur(),d=limData(cur),f=v=>+(v/d.uv).toFixed(4);
+  xlsxOut('Limit_utilisation_'+cur+'_'+TODAY+'.xlsx',[['Limit utilisation',[['Insurer','Limit',...d.cols,'Total (valid)','Limit left','Utilisation %','Issued till date',...(d.intl?['Bonds issued']:[])],...[...d.rows,d.T].map(r=>[r.name,f(r.lim),...r.byT.map(f),f(r.tot),f(r.left),+r.pct.toFixed(1),f(r.ever),...(d.intl?[r.n]:[])])]],['Valid bonds',[['Bond request','Bond number','Beneficiary','BU','Insurer','Type','Amount','Expiry'],...d.valid.map(b=>[b.ref||'',b.final?.bondNo||'',b.beneficiary||b.cust||'',b.bu||'',b.insurer||'',b.type||'',+b.amount||0,b.expiry||''])]]])};
+</script>
+<script>
+/* ============ v37: CSO dashboard is its own permission (give it to anyone in Users and roles); Settings → Integrations switches work ============ */
+SCR.splice(2,0,['dash','CSO dashboard',['view']]);
+RPERM.dash=['dash','view'];
+function v37fix(){if(!ACCESS||ACCESS.v37)return;ACCESS.v37=true;(ACCESS.roles||[]).forEach(r=>{r.perms=r.perms||{};const L=r.perms.limits||[];r.perms.dash=r.perms.dash||[];if((r.sa||L.includes('view'))&&!r.perms.dash.includes('view'))r.perms.dash.push('view')});save()}
+const _r37=render;render=function(){if(S&&(MODE==='shared'||MODE==='local')&&!ui._all)v37fix();_r37()};
+const _vs37=VIEWS.settings;VIEWS.settings=()=>{let h=_vs37();const I=S.settings.integ||{},dis=can('settings','edit')?'':'disabled',keys=['oms_out','oms_in','mail_auto'];let n=0;
+  return h.replace(/<label class="toggle"><input type="checkbox" disabled> <span>Phase 2<\/span><\/label>/g,()=>{const k=keys[n++];if(!k)return '';const on=!!I[k];return `<label class="toggle"><input type="checkbox" data-ch="intTog" data-k="${k}" ${on?'checked':''} ${dis}> <span>${on?'On · waiting for IT connection':'Off'}</span></label>`})};
+CH.intTog=el=>{const k=el.dataset.k,L={oms_out:'OMS · Bond Desk to OMS',oms_in:'OMS · OMS back to Bond Desk',mail_auto:'Mail · auto-file from the CSO mailbox'};S.settings.integ={...(S.settings.integ||{}),[k]:el.checked};audit('Settings',L[k]+' switched '+(el.checked?'on':'off'),'','');save();render();toast(el.checked?L[k]+' is switched on. It starts working once IT connects it (Phase 2).':L[k]+' is off.')};
+</script>
+<style>
+.wds{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:14px;margin-bottom:16px}
+.wd{grid-column:span 6;background:var(--panel);border:1px solid var(--line);border-radius:var(--r2);padding:14px 16px;min-width:0;overflow:auto}
+.wd.s{grid-column:span 3}.wd.l{grid-column:1/-1}
+.wd-h{display:flex;align-items:center;gap:6px;margin-bottom:8px}.wd-h b{flex:1;min-width:0;font-size:.98rem}
+.wd-n{font-size:2rem;font-weight:700;line-height:1.1}
+.wd-bar{display:grid;grid-template-columns:minmax(80px,1.2fr) minmax(60px,2fr) auto;gap:8px;align-items:center;margin:5px 0;font-size:.9rem}
+.wd.ed{outline:2px dashed var(--line3);outline-offset:-2px}
+.wd-empty{grid-column:1/-1;border:2px dashed var(--line3);border-radius:var(--r2);padding:26px;text-align:center;color:var(--mu)}
+@media (max-width:900px){.wd,.wd.s{grid-column:1/-1}}
+</style>
+<script>
+/* ============ v38: build your own Overview / dashboard (widgets, any columns); document dropdown from the masters ============ */
+const WM={count:['Requests','n',L=>L.length],live:['Live bonds','n',L=>L.filter(validB).length],liveVal:['Live value','m',L=>sumA(L.filter(validB))],issuedVal:['Issued till date (value)','m',L=>sumA(L.filter(everIssued))],openN:['In progress','n',L=>L.filter(b=>b.status==='open').length],openVal:['Pipeline value','m',L=>sumA(L.filter(b=>b.status==='open'))],expN:['Expired','n',L=>L.filter(lapsedB).length],soon:['Expiring in 90 days','n',L=>L.filter(b=>validB(b)&&b.expiry&&dBetween(TODAY,b.expiry)<=90).length],prem:['Premium paid','m',L=>L.reduce((a,b)=>a+(premOf(b)||0),0)],total:['Total bond value','m',L=>sumA(L)],avg:['Average bond value','m',L=>L.length?sumA(L)/L.length:0]};
+const WD={bu:['Business unit',b=>b.bu],insurer:['Insurer',b=>b.insurer],type:['Bond type',b=>b.type],broker:['Broker',b=>b.insurer?(b.broker||'Direct'):''],entity:['Legal entity',b=>b.entity],status:['Status',b=>statusL(b)[0]],beneficiary:['Beneficiary',b=>b.beneficiary||b.cust],project:['Project',b=>projName(b)],month:['Month issued',b=>String(b.final?.start||b.start||'').slice(0,7)],year:['Year issued',b=>String(b.final?.start||b.start||'').slice(0,4)]};
+const WT={stat:'Number tile',table:'Table by group',bar:'Bar chart',list:'Bond list',limit:'Limit utilisation'};
+const wfmt=(v,k,cur)=>WM[k][1]==='m'?money(v,cur):String(v);
+const wKey=k=>k+':'+me().id;
+const wGet=k=>{const D=S.m.dashboards||{};return D[wKey(k)]||D[k+':_all']||[]};
+function wMine(k){S.m.dashboards=S.m.dashboards||{};const x=wKey(k);if(!S.m.dashboards[x])S.m.dashboards[x]=clone(wGet(k));return S.m.dashboards[x]}
+const wTitle=w=>w.title||(w.t==='stat'?WM[w.m||'count'][0]:w.t==='table'?'By '+WD[w.g||'bu'][0].toLowerCase():w.t==='bar'?WM[w.m||'liveVal'][0]+' by '+WD[w.g||'bu'][0].toLowerCase():w.t==='list'?'Bond list':'Limit utilisation · '+(w.cur||'INR'));
+function wList(w,k){const cur=w.cur||'INR',f=w.f||{},st=f.st||'all';let L=(k==='cd'?dbAll():S.bonds).filter(b=>b.kind==='new'&&b.status!=='draft'&&curOf(b)===cur);
+  L=L.filter(b=>st==='all'||(st==='live'&&validB(b))||(st==='open'&&b.status==='open')||(st==='lapsed'&&(lapsedB(b)||b.status==='released'))||(st==='cancelled'&&['cancelled','withdrawn','rejected'].includes(b.status))||(st==='issued'&&everIssued(b)));
+  return L.filter(b=>(!f.bu||b.bu===f.bu)&&(!f.ins||b.insurer===f.ins)&&(!f.type||b.type===f.type))}
+function wGroup(L,k){const g={},fn=WD[k][1];L.forEach(b=>{const n=fn(b)||'—';(g[n]=g[n]||[]).push(b)});return Object.entries(g).sort((a,c)=>(k==='month'||k==='year')?c[0].localeCompare(a[0]):c[1].length-a[1].length)}
+function wBody(w,k){const cur=w.cur||'INR';
+  if(w.t==='limit'){const d=limData(cur),f=v=>(v/d.uv).toLocaleString('en-IN',{maximumFractionDigits:2});return tbl('<th>Insurer</th><th class="n">Limit</th><th class="n">Used</th><th class="n">Left</th><th>Used %</th>',[...d.rows,d.T].map(r=>`<tr class="${r===d.T?'dt-tot':''}"><td><b>${esc(r.name)}</b></td><td class="n">${f(r.lim)}</td><td class="n">${f(r.tot)}</td><td class="n ${r.left<0?'neg':''}">${f(r.left)}</td><td><div class="row c" style="flex-wrap:nowrap;gap:8px">${rbar(Math.max(0,r.pct),100,r.pct>=100?'er':r.pct>=limWarn()?'wa':'')}<b>${r.pct.toFixed(0)}%</b></div></td></tr>`).join(''),'No insurer set up in '+cur+'.')+`<div class="mu" style="margin-top:4px">${esc(CUR(cur).symbol+' '+CUR(cur).unit)}</div>`}
+  const L=wList(w,k);
+  if(w.t==='stat'){const m=w.m||'count';return `<div class="wd-n">${wfmt(WM[m][2](L),m,cur)}</div><div class="mu">${esc(WM[m][0])} · ${L.length} bond request(s)</div>`}
+  if(w.t==='bar'){const m=w.m||'liveVal',vals=wGroup(L,w.g||'bu').map(([n,l])=>[n,WM[m][2](l)]).sort((a,c)=>c[1]-a[1]).slice(0,10),mx=Math.max(1,...vals.map(x=>x[1]));return vals.map(([n,v])=>`<div class="wd-bar"><span class="ell" title="${esc(n)}">${esc(n)}</span>${rbar(v,mx)}<b>${wfmt(v,m,cur)}</b></div>`).join('')||'<p class="mu">Nothing to show.</p>'}
+  if(w.t==='table'){const cols=w.cols&&w.cols.length?w.cols:['count','liveVal'];return repTbl([WD[w.g||'bu'][0],...cols.map(c=>WM[c][0])],wGroup(L,w.g||'bu').map(([n,l])=>[n,...cols.map(c=>wfmt(WM[c][2](l),c,cur))]),'Nothing to show.')}
+  if(w.t==='list'){const want=w.lc&&w.lc.length?w.lc:['ref','beneficiary','insurer','amount','expiry'],cols=CF.filter(c=>want.includes(c[0])),srt={expiry:(a,c)=>String(a.expiry||'9').localeCompare(String(c.expiry||'9')),amount:(a,c)=>(+c.amount||0)-(+a.amount||0),created:(a,c)=>String(c.createdAt||'').localeCompare(String(a.createdAt||''))}[w.so||'expiry'];
+    return repTbl(cols.map(c=>c[1]),L.slice().sort(srt).slice(0,+w.n||10).map(b=>cols.map(c=>c[0]==='ref'?{ref:b}:c[0]==='amount'?money(b.amount,curOf(b)):c[3]==='d'?fd(c[2](b)):c[2](b))),'Nothing to show.')}
+  return ''}
+function wArea(k){const ed=!!(ui.wdE&&ui.wdE[k]),L=wGet(k),mine=!!(S.m.dashboards||{})[wKey(k)];
+  if(k==='ov'&&!ed&&!L.length)return `<div class="row" style="justify-content:flex-end;margin-bottom:8px"><button class="btn sm" data-a="wdEdit" data-k="ov">✎ Design my overview</button></div>`;
+  const bar=`<div class="row c" style="justify-content:space-between;gap:8px;margin-bottom:12px;flex-wrap:wrap"><div><h2 style="margin:0">${k==='cd'?'My dashboard':'My overview'}</h2><span class="mu">${ed?'Add, move, edit or remove widgets. Saved as you go.':L.length?'Your own layout.':'Design your own: number tiles, tables with the columns you choose, charts, bond lists and limit utilisation.'}</span></div><div class="acts">${ed?`<button class="btn p" data-a="wdAdd" data-k="${k}">+ Add widget</button>${can('settings','edit')&&L.length?`<button class="btn" data-a="wdAll" data-k="${k}" title="Everyone who has no layout of their own will see this">Use as default for everyone</button>`:''}${mine?`<button class="btn d" data-a="wdReset" data-k="${k}">Reset</button>`:''}<button class="btn" data-a="wdEdit" data-k="${k}">Done</button>`:`<button class="btn" data-a="wdEdit" data-k="${k}">✎ Customise</button>`}</div></div>`;
+  const cards=L.map((w,i)=>`<div class="wd ${w.sz||'m'} ${ed?'ed':''}"><div class="wd-h"><b>${esc(wTitle(w))}</b>${ed?`<button class="btn sm" data-a="wdMv" data-k="${k}" data-i="${i}" data-d="-1" ${i?'':'disabled'} aria-label="Move up">↑</button><button class="btn sm" data-a="wdMv" data-k="${k}" data-i="${i}" data-d="1" ${i<L.length-1?'':'disabled'} aria-label="Move down">↓</button><button class="btn sm" data-a="wdEd" data-k="${k}" data-i="${i}">✎</button><button class="btn sm d" data-a="wdDel" data-k="${k}" data-i="${i}" aria-label="Remove">✕</button>`:''}</div>${wBody(w,k)}</div>`).join('')||`<div class="wd-empty">Nothing here yet. Click <b>+ Add widget</b>.</div>`;
+  return `<div class="panel">${bar}<div class="wds" style="margin-bottom:0">${cards}</div></div>`}
+A.wdEdit=el=>{ui.wdE=ui.wdE||{};ui.wdE[el.dataset.k]=!ui.wdE[el.dataset.k];render()};
+A.wdMv=el=>{const L=wMine(el.dataset.k),i=+el.dataset.i,j=i+(+el.dataset.d);if(j<0||j>=L.length)return;[L[i],L[j]]=[L[j],L[i]];save();render()};
+A.wdDel=el=>{const k=el.dataset.k,L=wMine(k),w=L[+el.dataset.i];if(w)confirmBox('Remove this widget?',esc(wTitle(w)),'Remove',()=>{L.splice(L.indexOf(w),1);save();render()},{danger:true})};
+A.wdReset=el=>{const k=el.dataset.k;confirmBox('Reset to the default layout?','Your own widgets are removed. You then see the everyone-default, or the standard screen.','Reset',()=>{delete S.m.dashboards[wKey(k)];save();render()},{danger:true})};
+A.wdAll=el=>{const k=el.dataset.k;S.m.dashboards[k+':_all']=clone(wMine(k));audit('Dashboards','Default layout set for everyone',k==='cd'?'CSO dashboard':'Overview','');save();render();toast('Saved. People without a layout of their own now see this one.')};
+A.wdAdd=el=>{ui.wd={k:el.dataset.k,i:-1,w:{t:'stat',title:'',cur:'INR',sz:'s',f:{},m:'count',g:'bu',cols:['count','liveVal'],lc:['ref','beneficiary','insurer','amount','expiry'],so:'expiry',n:10}};wModal()};
+A.wdEd=el=>{const L=wMine(el.dataset.k);ui.wd={k:el.dataset.k,i:+el.dataset.i,w:clone(L[+el.dataset.i])};wModal()};
+const wv=id=>document.getElementById(id)?.value;
+function wRead(){const w=ui.wd.w;if(wv('wdTitle')!=null)w.title=wv('wdTitle').trim();if(wv('wdSz'))w.sz=wv('wdSz');if(wv('wdCur'))w.cur=wv('wdCur');
+  if(document.getElementById('wdSt'))w.f={st:wv('wdSt'),bu:wv('wdBu'),ins:wv('wdIns'),type:wv('wdTy')};if(wv('wdM'))w.m=wv('wdM');if(wv('wdG'))w.g=wv('wdG');
+  const cb=$$('#wdCols input:checked').map(x=>x.value);if(document.getElementById('wdCols')){if(w.t==='table')w.cols=cb;else if(w.t==='list')w.lc=cb}if(wv('wdSo'))w.so=wv('wdSo');if(wv('wdN'))w.n=+wv('wdN')||10}
+function wModal(){const w=ui.wd.w,t=w.t,sel=(id,list,v,blank,ch)=>`<select id="${id}" ${ch?`data-ch="${ch}"`:''}>${opts(list,v,blank)}</select>`,M=Object.entries(WM).map(([k,v])=>[k,v[0]]),G=Object.entries(WD).map(([k,v])=>[k,v[0]]);ui.modal={kind:'wd'};
+  modal(`<h2>${ui.wd.i<0?'Add':'Edit'} widget</h2><div class="grid g3">${fld('Widget type',sel('wdT2',Object.entries(WT),t,null,'wdType'))}${fld('Title',`<input id="wdTitle" value="${esc(w.title||'')}" placeholder="Leave blank for an automatic title">`)}${fld('Size',sel('wdSz',[['s','Small (¼ width)'],['m','Medium (½ width)'],['l','Full width']],w.sz||'m'))}
+   ${fld('Currency',sel('wdCur',MA('currencies').map(c=>c.code),w.cur||'INR'))}
+   ${t!=='limit'?fld('Bonds',sel('wdSt',[['all','All'],['live','Live (valid)'],['open','In progress'],['issued','Issued till date'],['lapsed','Expired or returned'],['cancelled','Cancelled']],w.f?.st||'all'))+fld('Business unit',sel('wdBu',MA('bus').map(x=>x.name),w.f?.bu||'','All'))+fld('Insurer',sel('wdIns',MA('insurers').map(x=>x.name),w.f?.ins||'','All'))+fld('Bond type',sel('wdTy',MA('bondTypes').map(x=>x.name),w.f?.type||'','All')):''}
+   ${t==='stat'?fld('Number to show',sel('wdM',M,w.m||'count')):''}${t==='bar'?fld('Group by',sel('wdG',G,w.g||'bu'))+fld('Value',sel('wdM',M,w.m||'liveVal')):''}${t==='table'?fld('Group by (rows)',sel('wdG',G,w.g||'bu')):''}
+   ${t==='list'?fld('Sort by',sel('wdSo',[['expiry','Expiry (soonest)'],['amount','Amount (largest)'],['created','Newest']],w.so||'expiry'))+fld('Rows',sel('wdN',[10,15,25,50],w.n||10)):''}</div>
+   ${t==='table'?fld('Columns (pick any)',`<div class="crcols" id="wdCols">${Object.entries(WM).map(([k,v])=>`<label class="ck"><input type="checkbox" value="${k}" ${(w.cols||[]).includes(k)?'checked':''}> ${esc(v[0])}</label>`).join('')}</div>`,'','full'):''}
+   ${t==='list'?fld('Columns (pick any bond field)',`<div class="crcols" id="wdCols">${CF.map(c=>`<label class="ck"><input type="checkbox" value="${c[0]}" ${(w.lc||[]).includes(c[0])?'checked':''}> ${esc(c[1])}</label>`).join('')}</div>`,'','full'):''}
+   <div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="wdSave">${ui.wd.i<0?'Add widget':'Save'}</button></div>`,true)}
+CH.wdType=el=>{wRead();ui.wd.w.t=el.value;wModal()};
+A.wdSave=()=>{wRead();const d=ui.wd,w=d.w;if(w.t==='table'&&!(w.cols||[]).length)return toast('Pick at least one column.',1);if(w.t==='list'&&!(w.lc||[]).length)return toast('Pick at least one column.',1);
+  const L=wMine(d.k);if(d.i<0)L.push(w);else L[d.i]=w;save();closeModal();render()};
+/* ---------- where the widgets show ---------- */
+const _ov38=VIEWS.overview;VIEWS.overview=()=>wArea('ov')+_ov38();
+const _vd38=VIEWS.dash;VIEWS.dash=()=>{const t=dTab(),mine=`<button class="chip ${t==='my'?'on':''}" role="tab" aria-selected="${t==='my'}" data-a="dashTab" data-k="my">✎ My dashboard</button>`;
+  if(t==='my')return `<div class="dtabs" role="tablist">${[['lim','Limit utilisation'],['limI','Limit utilisation · International'],['ov','Overall'],['ovI','Overall · International']].map(([k,l])=>`<button class="chip" role="tab" data-a="dashTab" data-k="${k}">${l}</button>`).join('')}${mine}</div>`+wArea('cd');
+  const h=_vd38(),i=h.indexOf('</div>');return h.slice(0,i)+mine+h.slice(i)};
+/* ---------- add a document: pick from the masters, or type a new one ---------- */
+function docLib(pack){const m=new Map(),add=(d,src)=>{if(d.name&&!m.has(d.name))m.set(d.name,{name:d.name,owner:d.owner||'BU',src})};const R=()=>MA('reqDocs').forEach(d=>add(d,'Request checklist')),I=()=>MA('insDocs').forEach(d=>add(d,'Insurer pack'));if(pack==='insurer'){I();R()}else{R();I()}return [...m.values()]}
+function docPick(have,pack){const g={};docLib(pack).filter(d=>!have.includes(d.name)).forEach(d=>(g[d.src]=g[d.src]||[]).push(d));
+  return '<select id="docPick" data-ch="docPick"><option value="">Choose from the masters…</option>'+Object.entries(g).map(([s,a])=>`<optgroup label="${esc(s)}">${a.sort((x,y)=>x.name.localeCompare(y.name)).map(d=>`<option value="${esc(d.name)}" data-o="${esc(d.owner)}">${esc(d.name)}</option>`).join('')}</optgroup>`).join('')+'</select>'}
+CH.docPick=el=>{const o=el.selectedOptions[0],n=document.getElementById('slName')||document.getElementById('idName'),ow=document.getElementById('idOwner');if(n)n.value=el.value;if(ow&&o?.dataset.o)ow.value=o.dataset.o};
+A.addSlot=()=>{const b=ui.draft;ui.modal={kind:'slot'};modal(`<h2>Add a document</h2><p class="lead">Any document from the masters, whatever the bond type, or a new one.</p>${fld('Pick from the document masters',docPick((b.reqDocs||[]).map(d=>d.name),'request'),'Request checklist and insurer pack documents set up in Masters.')}${fld('Document name <span class="req">*</span>','<input id="slName" placeholder="Or type a new document name">')}<div class="foot"><button class="btn" data-a="closeModal">Back</button><button class="btn p" data-a="addSlotGo">Add</button></div>`)};
+A.addInsDoc=()=>{const b=bond(ui.bond);ui.modal={kind:'insdoc'};modal(`<h2>Add a document to the insurer pack</h2>${fld('Pick from the document masters',docPick(((b&&b.insDocs)||[]).map(d=>d.name),'insurer'),'Insurer pack and request checklist documents set up in Masters.')}${fld('Document name <span class="req">*</span>','<input id="idName" placeholder="Or type a new document name">')}${fld('Owner','<input id="idOwner" value="BU">')}<div class="foot"><button class="btn" data-a="closeModal">Back</button><button class="btn p" data-a="addInsDocGo">Add</button></div>`)};
+</script>
+<style>
+.lay{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px;align-items:start}
+.lay>.ls{grid-column:span 2;min-width:0}.lay>.ls.half{grid-column:span 1}
+@media(max-width:900px){.lay>.ls,.lay>.ls.half{grid-column:span 2}}
+.lay-bar{display:flex;gap:8px;align-items:center;justify-content:flex-end;margin:0 0 10px;flex-wrap:wrap}
+.lctl{display:flex;gap:6px;align-items:center;flex-wrap:wrap;background:var(--soft);border:1px dashed var(--ac);border-radius:var(--r2);padding:6px 10px;margin-bottom:6px;font-size:.9rem}
+.lctl b{flex:1 1 auto}
+.ls.off>*:not(.lctl){opacity:.4}
+button.stat[data-a="drill"]{width:100%}
+button.stat[data-a="drill"] strong{text-decoration:underline dotted;text-underline-offset:4px}
+.dlg.drl{max-width:min(1250px,96vw);width:96vw}
+.drl .tw{max-height:58vh;overflow:auto}
+</style>
+<script>
+/* ============ v39: move / hide / resize dashboard sections; click a number to see exactly those bonds (filterable like Excel) ============ */
+const lkey=t=>'lay:'+t+':'+me().id;
+const lget=t=>{S.m.dashboards=S.m.dashboards||{};return S.m.dashboards[lkey(t)]||{order:[],hide:[],half:[]}};
+const lset=(t,v)=>{S.m.dashboards=S.m.dashboards||{};S.m.dashboards[lkey(t)]=v;save()};
+const DRILL_T={'Bond requests':'all','Live bonds':'live','Utilised (valid bonds)':'live','Expired / returned':'lapsed','Cancelled / dropped':'canc','In pipeline (open)':'open','Premium paid':'prem'};
+function layWrap(tab,html,cur){
+  const tp=document.createElement('template');tp.innerHTML=html;const secs=[];
+  const add=el=>{let id;if(el.classList.contains('stats'))id='Key numbers';else{const h=el.querySelector('h2');id=(h?h.textContent:'Section').replace(/\s*\(\d+\)\s*$/,'').trim()}
+    let n=id,i=2;while(secs.some(s=>s.id===n))n=id+' '+(i++);secs.push({id:n,html:gridify(el,tab,id,n)})};
+  [...tp.content.children].forEach(el=>{if(el.classList.contains('ov2'))[...el.children].forEach(c=>[...c.children].forEach(add));else add(el)});
+  const S0=lget(tab),ord=[...S0.order.filter(i=>secs.some(s=>s.id===i)),...secs.map(s=>s.id).filter(i=>!S0.order.includes(i))];
+  const by=Object.fromEntries(secs.map(s=>[s.id,s])),edit=!!ui.layEdit;ui._lay={tab,ids:ord};
+  const hid=ord.filter(i=>S0.hide.includes(i)).length;
+  const bar=`<div class="lay-bar">${edit?`<span class="mu" style="margin-right:auto">Use ↑ ↓ to move a section, ½ to put two side by side, 👁 to hide it.</span><button class="btn" data-a="layReset">Reset to default</button><button class="btn p" data-a="layEdit">Done</button>`:`${hid?`<span class="mu">${hid} section(s) hidden</span>`:''}<button class="btn" data-a="layEdit">⚙ Customise layout</button>`}</div>`;
+  const body=ord.map((id,ix)=>{const off=S0.hide.includes(id);if(off&&!edit)return '';const half=S0.half.includes(id);
+    const ctl=edit?`<div class="lctl"><b>${esc(id)}</b><button class="btn sm" data-a="layMv" data-i="${ix}" data-d="top" ${ix?'':'disabled'} title="Move to top">⤒ Top</button><button class="btn sm" data-a="layMv" data-i="${ix}" data-d="-1" ${ix?'':'disabled'}>↑</button><button class="btn sm" data-a="layMv" data-i="${ix}" data-d="1" ${ix<ord.length-1?'':'disabled'}>↓</button><button class="btn sm" data-a="layHalf" data-i="${ix}">${half?'Full width':'½ width'}</button><button class="btn sm" data-a="layHide" data-i="${ix}">${off?'👁 Show':'Hide'}</button></div>`:'';
+    return `<div class="ls ${half?'half':''} ${off?'off':''}">${ctl}${by[id].html}</div>`}).join('');
+  const out=document.createElement('div');out.innerHTML=body;
+  out.querySelectorAll('.stat').forEach(s=>{const k=DRILL_T[(s.querySelector('small')||{}).textContent];if(!k||s.tagName==='BUTTON')return;const b=document.createElement('button');b.className='stat';b.type='button';b.dataset.a='drill';b.dataset.k=k;b.dataset.c=cur;b.title='Click to see these bonds';b.innerHTML=s.innerHTML;s.replaceWith(b)});
+  const DIM={'By business unit':['bu',b=>b.bu||'—'],'By insurer':['insurer',b=>b.insurer||'—'],'By bond type':['type',b=>b.type||'—'],'By route / broker':['broker',b=>b.insurer?(b.broker||'Direct'):'—'],'By legal entity':['entity',b=>b.entity||'—'],'Issued by month (last 12 months)':['month',null]},CK={'Requests':'all','Live':'live','In progress':'open','Bonds':'issued','Value':'issued'};
+  out.querySelectorAll('.panel').forEach(p=>{const h=p.querySelector('h2'),dm=h&&DIM[h.textContent.trim()];if(!dm)return;const ths=[...p.querySelectorAll('thead th')].map(t=>t.textContent.replace(/[▾↑↓]/g,'').trim());p.querySelectorAll('tbody tr').forEach(tr=>{if(tr.classList.contains('dt-tot'))return;const td=[...tr.children],v=(td[0]?.textContent||'').trim();td.forEach((c,i)=>{const k=CK[ths[i]];if(!k||!v)return;const n=c.textContent.trim();if(n===''||n==='0'||n==='—'||/^[^\d]*0(\.0+)?(\s|$)/.test(n))return;c.innerHTML=`<button class="btn link" data-a="drill" data-k="${k}" data-c="${cur}" data-dim="${dm[0]}" data-v="${esc(v)}" title="Click to see these bonds">${esc(n)}</button>`})})});
+  return bar+`<div class="lay">${out.innerHTML}</div>`}
+const DIMF={bu:b=>b.bu||'—',insurer:b=>b.insurer||'—',type:b=>b.type||'—',broker:b=>b.insurer?(b.broker||'Direct'):'—',entity:b=>b.entity||'—'};
+const _ov39=ovView;ovView=function(cur){return layWrap(dTab(),_ov39(cur),cur)};
+const _lim39=limView;limView=function(cur){return layWrap(dTab(),_lim39(cur),cur)};
+A.layEdit=()=>{ui.layEdit=!ui.layEdit;render()};
+A.layReset=()=>confirmBox('Reset layout','Show every section again in the original order?','Reset',()=>{lset(ui._lay.tab,{order:[],hide:[],half:[]});render()});
+function layMut(fn){const L=ui._lay,s=clone(lget(L.tab));s.order=[...L.ids];fn(s,L.ids);lset(L.tab,s);render()}
+A.layMv=el=>layMut((s,ids)=>{const i=+el.dataset.i,d=el.dataset.d,j=d==='top'?0:i+ +d;if(j<0||j>=ids.length)return;const [x]=s.order.splice(i,1);s.order.splice(j,0,x)});
+A.layHalf=el=>layMut((s,ids)=>{const id=ids[+el.dataset.i];s.half=s.half.includes(id)?s.half.filter(x=>x!==id):[...s.half,id]});
+A.layHide=el=>layMut((s,ids)=>{const id=ids[+el.dataset.i];s.hide=s.hide.includes(id)?s.hide.filter(x=>x!==id):[...s.hide,id]});
+/* ---------- the pop-up list ---------- */
+const DRILL_L={all:'Bond requests',live:'Live bonds',open:'In progress',lapsed:'Expired / returned',canc:'Cancelled / dropped',prem:'Bonds with premium paid'};
+const DRILL_F={all:()=>true,live:validB,open:b=>b.status==='open',lapsed:b=>lapsedB(b)||b.status==='released',canc:b=>['cancelled','withdrawn','rejected'].includes(b.status),prem:b=>premOf(b)>0};
+const dEnd=b=>b.final?.end||b.expiry||'',dDays=b=>{const e=dEnd(b);return e?dBetween(TODAY,e):''};
+TBL.drill={key:'drill',cols:[
+ {k:'ref',l:'Bond request',g:b=>b.ref||'Draft'},{k:'no',l:'Bond number',g:b=>b.final?.bondNo||''},{k:'ben',l:'Beneficiary',g:b=>b.beneficiary||b.cust||''},{k:'bu',l:'BU',g:b=>b.bu||''},{k:'ins',l:'Insurer',g:b=>b.insurer||''},{k:'type',l:'Bond type',g:b=>b.type||''},{k:'st',l:'Status',g:b=>statusL(b)[0]},{k:'brk',l:'Broker',g:b=>b.insurer?(b.broker||'Direct'):''},{k:'ent',l:'Legal entity',g:b=>b.entity||''},
+ {k:'amt',l:'Amount',n:1,g:b=>+b.amount||0},{k:'prem',l:'Premium',n:1,g:b=>premOf(b)||''},{k:'start',l:'Start',d:1,g:b=>String(b.final?.start||b.start||'').slice(0,10)},{k:'exp',l:'Expiry',d:1,g:b=>String(dEnd(b)).slice(0,10)},{k:'days',l:'Days left',n:1,g:b=>dDays(b)}],
+ rows:()=>ui.dr?ui.dr.rows:[]};
+A.drill=el=>{const k=el.dataset.k,c=el.dataset.c,f=DRILL_F[k]||DRILL_F.all,dm=el.dataset.dim,dv=el.dataset.v,df=dm&&DIMF[dm];ui.dr={k,cur:c,title:(DRILL_L[k]||'Bonds')+(df?' · '+dv:''),rows:dashSet(c).filter(b=>f(b)&&(!df||df(b)===dv))};ui.ft.drill={F:{},SO:null,q:''};ui.modal={kind:'drill'};drillShow()};
+function drillShow(){const D=ui.dr;if(!D)return;const T=TBL.drill,R=ftRows(T),sc=document.getElementById('drl-sc'),top=sc?sc.scrollTop:0,f=v=>money(v,D.cur);
+  const body=R.map(b=>{const [sl,sc2]=statusL(b),dd=dDays(b);return `<tr><td><button class="btn link" data-a="openBondM" data-id="${b.id}">${esc(b.ref||'Draft')}</button></td><td>${esc(b.final?.bondNo||'')}</td><td>${esc(b.beneficiary||b.cust||'')}</td><td>${esc(b.bu||'')}</td><td>${esc(b.insurer||'')}</td><td>${esc(b.type||'')}</td><td>${pill(sl,sc2)}</td><td>${esc(b.insurer?(b.broker||'Direct'):'')}</td><td>${esc(b.entity||'')}</td><td class="n">${f(b.amount)}</td><td class="n">${premOf(b)?f(premOf(b)):'—'}</td><td>${fd(String(b.final?.start||b.start||'').slice(0,10))}</td><td>${fd(String(dEnd(b)).slice(0,10))}</td><td class="n">${dd===''?'—':dd}</td></tr>`}).join('');
+  modal(`<div class="row c" style="justify-content:space-between;gap:10px"><div><h2 style="margin:0">${esc(D.title)} · ${D.cur}</h2><span class="mu">Showing <b>${R.length}</b> of ${D.rows.length} · total ${f(sumA(R))}. Use ▾ on any column to filter or sort, like Excel.</span></div><div class="acts"><button class="btn" data-a="drillXl">Export to Excel</button><button class="btn" data-a="closeModal">Close</button></div></div>
+  <div style="margin-top:10px">${ftBar(T,'Search all columns')}</div>
+  <div id="drl-sc" class="tw-wrap">${tbl(ftHead(T),body,'No bonds match your filters.')}</div>`,true);
+  const d=document.querySelector('#modal-root .dlg');if(d)d.classList.add('drl');const n=document.getElementById('drl-sc');if(n){const t=n.querySelector('.tw');if(t)t.id='drl-sc2';n.scrollTop=top;if(top&&t)t.scrollTop=top}}
+const _r39=render;render=function(){_r39();if(ui.modal&&ui.modal.kind==='drill')drillShow()};
+const _q39=CH.ftQ;CH.ftQ=el=>{if(el.dataset.k!=='drill')return _q39(el);ftS('drill').q=el.value;const pos=el.selectionStart;drillShow();const n=document.getElementById('q_drill');if(n){n.focus();n.setSelectionRange(pos,pos)}};
+const _c39=A.ftClear;A.ftClear=el=>{if(el.dataset.k!=='drill')return _c39(el);ui.ft.drill={F:{},SO:null,q:''};drillShow()};
+A.drillXl=()=>{const D=ui.dr,T=TBL.drill,R=ftRows(T);xlsxOut((D.title.replace(/[^\w]+/g,'_'))+'_'+D.cur+'_'+TODAY+'.xlsx',[[D.title.slice(0,30),[T.cols.map(c=>c.l),...R.map(b=>T.cols.map(c=>c.g(b)))]]])};
+</script>
+<script>
+/* ============ v41: clickable numbers everywhere (Overview tiles, Issued by month, custom dashboard widgets) ============ */
+const mLab=b=>{const m=String(b.final?.start||b.start||'').slice(0,7);return m?new Date(m+'-01T00:00').toLocaleDateString('en-GB',{month:'short',year:'numeric'}):''};
+DIMF.month=mLab;DRILL_F.issued=everIssued;DRILL_L.issued='Issued bonds';
+ui._dq=[];
+const dq=(title,rows)=>{ui._dq.push({title,rows});return ui._dq.length-1};
+const dqBtn=(txt,title,rows)=>`<button class="btn link" data-a="drillQ" data-i="${dq(title,rows)}" title="Click to see these bonds">${txt}</button>`;
+A.drillQ=el=>{const q=ui._dq[+el.dataset.i];if(!q)return;ui.dr={k:'q',cur:'',title:q.title,rows:q.rows};ui.ft.drill={F:{},SO:null,q:''};ui.modal={kind:'drill'};drillShow()};
+const totTxt=R=>{const g={};R.forEach(b=>{const c=curOf(b);g[c]=(g[c]||0)+(+b.amount||0)});return Object.entries(g).map(([c,v])=>money(v,c)).join(' + ')||'—'};
+/* the pop-up now formats each bond in its own currency */
+(function(){const s=drillShow.toString();})();
+const _ds41=drillShow;drillShow=function(){const D=ui.dr;if(D&&!D.cur){D.cur='INR'}_ds41();
+  /* fix amounts for mixed-currency lists */
+  const T=TBL.drill,R=ftRows(T),rows=document.querySelectorAll('#modal-root tbody tr');if(rows.length===R.length)R.forEach((b,i)=>{const td=rows[i].children;if(td[9])td[9].textContent=money(b.amount,curOf(b));if(td[10]&&premOf(b))td[10].textContent=money(premOf(b),curOf(b))});
+  const sp=document.querySelector('#modal-root .dlg .mu');if(sp)sp.innerHTML=sp.innerHTML.replace(/total .*?\. Use ▾/,'total '+totTxt(R)+'. Use ▾');if(D&&D.k==='q'){const h=document.querySelector('#modal-root .dlg h2');if(h)h.textContent=D.title}};
+/* ---------- Overview tiles ---------- */
+const OVF={'Requests in progress':()=>S.bonds.filter(b=>b.status==='open'),'Live bonds':()=>S.bonds.filter(b=>b.status==='issued'&&b.kind==='new'),'Waiting on you':()=>S.bonds.filter(isMine),'Expiring':()=>{const w=+S.settings.expiryWarn||60;return S.bonds.filter(b=>b.status==='issued'&&b.kind==='new').filter(b=>{const d=dBetween(TODAY,b.expiry);return d!=null&&d>=0&&d<=w})}};
+const _ov41=VIEWS.overview;VIEWS.overview=()=>{ui._dq=[];const tp=document.createElement('template');tp.innerHTML=_ov41();
+  tp.content.querySelectorAll('.stats .stat').forEach(s=>{const t=((s.querySelector('small')||{}).textContent||'').trim(),key=Object.keys(OVF).find(k=>t.startsWith(k));if(!key)return;const b=document.createElement('button');b.type='button';b.className='stat';b.title='Click to see these bonds';b.innerHTML=s.innerHTML;b.dataset.a='drillQ';b.dataset.i=dq(t,OVF[key]());s.replaceWith(b)});
+  return tp.innerHTML};
+/* ---------- custom dashboard widgets ---------- */
+const MF={count:()=>true,live:validB,liveVal:validB,issuedVal:everIssued,openN:b=>b.status==='open',openVal:b=>b.status==='open',expN:lapsedB,soon:b=>validB(b)&&b.expiry&&dBetween(TODAY,b.expiry)<=90,prem:b=>premOf(b)>0,total:()=>true,avg:()=>true};
+const _wb41=wBody;wBody=function(w,k){const h=_wb41(w,k);if(!['stat','table','bar'].includes(w.t))return h;const L=wList(w,k),tp=document.createElement('template');tp.innerHTML=h;const T=tp.content;
+  if(w.t==='stat'){const m=w.m||'count',n=T.querySelector('.wd-n');if(n)n.innerHTML=dqBtn(n.innerHTML,wTitle(w),L.filter(MF[m]||MF.count))}
+  else if(w.t==='table'){const cols=w.cols&&w.cols.length?w.cols:['count','liveVal'],G=wGroup(L,w.g||'bu');T.querySelectorAll('tbody tr').forEach((tr,i)=>{const g=G[i];if(!g)return;[...tr.children].forEach((c,j)=>{if(j<1)return;const m=cols[j-1],rows=g[1].filter(MF[m]||MF.count);if(!rows.length)return;c.innerHTML=dqBtn(c.innerHTML,WM[m][0]+' · '+g[0],rows)})})}
+  else if(w.t==='bar'){const m=w.m||'liveVal',G=wGroup(L,w.g||'bu').map(([n,l])=>[n,l,WM[m][2](l)]).sort((a,c)=>c[2]-a[2]).slice(0,10);T.querySelectorAll('.wd-bar').forEach((r,i)=>{const g=G[i],e=r.querySelector('.ell');if(!g||!e)return;const rows=g[1].filter(MF[m]||MF.count);if(rows.length)e.innerHTML=dqBtn(e.innerHTML,WM[m][0]+' · '+g[0],rows)})}
+  const o=document.createElement('div');o.appendChild(T.cloneNode(true));return o.innerHTML};
+/* ---------- Issued by month ---------- */
+const _lw41=layWrap;layWrap=function(tab,html,cur){ui._dq=ui._dq||[];return _lw41(tab,html,cur)};
+</script>
+<script>
+/* ============ v42: every dashboard grid gets Excel-style filters + a total row that follows the filter (SUBTOTAL: visible rows only) ============ */
+const GRID_IDS=['By business unit','By insurer','By bond type','By route / broker','By legal entity','Issued by month (last 12 months)','Valid bonds','Expiring in the next 90 days'];
+const GTOT=['Requests','Live','Live value','Issued till date','In progress','Premium paid','Bonds','Value','Amount'];
+const NUMRX=/^[^\d\-]*\d[\d,]*(\.\d+)?(\s*[A-Za-z]+)?$/;
+const gnum=t=>parseFloat(String(t).replace(/[^\d.]/g,''))||0;
+function gridify(el,tab,id,n){
+  if(!GRID_IDS.includes(id))return el.outerHTML;
+  const tw=el.querySelector('.tw'),tb=tw&&tw.querySelector('table');if(!tb)return el.outerHTML;
+  const hs=[...tb.querySelectorAll('thead th')].map(t=>t.textContent.trim()),trs=[...tb.querySelectorAll('tbody tr')].filter(tr=>tr.children.length===hs.length);
+  if(!trs.length||!hs.length)return el.outerHTML;
+  const data=trs.map(tr=>({els:[...tr.children],v:[...tr.children].map(c=>c.textContent.trim())}));
+  const isN=hs.map((h,j)=>j>0&&h!==''&&data.every(r=>r.v[j]===''||r.v[j]==='—'||NUMRX.test(r.v[j]))&&data.some(r=>NUMRX.test(r.v[j])));
+  data.forEach(r=>{r.els.forEach((c,j)=>{if(isN[j])c.classList.add('n')});r.tds=r.els.map(c=>c.outerHTML)});
+  const key='g'+tab+'_'+n.replace(/\W+/g,'_');
+  const T=TBL[key]={key,cols:hs.map((h,j)=>({k:'c'+j,l:h||' ',n:isN[j],nof:h==='',g:r=>isN[j]?gnum(r.v[j]):r.v[j]})),rows:()=>data};
+  const R=ftRows(T),filt=R.length!==data.length;
+  const body=R.map(r=>`<tr>${r.tds.join('')}</tr>`).join('');
+  let tot='';
+  const cells=hs.map((h,j)=>{if(j===0)return `<td>${filt?'Subtotal · '+R.length+' of '+data.length:'Total'}</td>`;
+    if(!GTOT.includes(h)||!isN[j])return '<td></td>';
+    const ex=data.map(r=>r.v[j]).find(t=>t&&t!=='—'),pre=ex?ex.match(/^[^\d]*/)[0]:'',suf=ex?(ex.match(/(\s*[A-Za-z]+)?$/)||[''])[0]:'';
+    const s=R.reduce((a,r)=>a+gnum(r.v[j]),0);return `<td class="n">${ex?pre+s.toLocaleString('en-IN',{maximumFractionDigits:2})+suf:'—'}</td>`}).join('');
+  if(R.length)tot=`<tr class="dt-tot">${cells}</tr>`;
+  tw.outerHTML=ftBar(T,'Search this table')+tbl(ftHead(T),body+tot,'No rows match your filters.');
+  return el.outerHTML}
+</script>
+<script>
+/* ============ v44: CSO / bond team can attach files (insurer drafts to be signed) when asking the BU for documents ============ */
+const askFilesHtml=()=>(ui.askFiles||[]).map((f,i)=>`<div class="row c" style="gap:8px;margin-top:4px">${fileChip(f)}<button class="btn sm" data-a="askFileDel" data-i="${i}">Remove</button></div>`).join('')||'<span class="mu">No files attached.</span>';
+const _ad44=A.askDocs;A.askDocs=function(el){ui.askFiles=[];_ad44(el);const ft=document.querySelector('#modal-root .foot');if(ft)ft.insertAdjacentHTML('beforebegin',`<div class="fld" style="margin-top:8px"><label>Attach files for the BU <span class="mu">(optional · e.g. draft from the insurer to be signed and uploaded back)</span></label><div><button class="btn sm" type="button" data-a="askAttach">＋ Attach files</button></div><div id="askFiles" style="margin-top:4px">${askFilesHtml()}</div></div>`)};
+A.askAttach=async()=>{const f=await pickFiles(true);if(!f.length)return;ui.askFiles=ui.askFiles||[];f.forEach(x=>ui.askFiles.push(fileMeta(x)));const n=document.getElementById('askFiles');if(n)n.innerHTML=askFilesHtml()};
+A.askFileDel=el=>{(ui.askFiles||[]).splice(+el.dataset.i,1);const n=document.getElementById('askFiles');if(n)n.innerHTML=askFilesHtml()};
+const _ag44=A.askDocsGo;A.askDocsGo=function(){const b=bond(ui.bond),n0=(b.docReqs||[]).length,fl=[...(ui.askFiles||[])];_ag44();
+  if((b.docReqs||[]).length>n0&&fl.length){const r=b.docReqs[b.docReqs.length-1];r.files=fl;blog(b,'Bond team attached '+fl.length+' file(s) for the BU to sign: '+fl.map(f=>f.name).join(', ')+'.');save();render()}ui.askFiles=[]};
+const _dt44=docTable;docTable=function(b,pack,slots,editable){const h=_dt44(b,pack,slots,editable),r=openReq(b,pack);
+  if(!r||!(r.files||[]).length)return h;
+  return `<div class="note" style="margin-bottom:10px"><b>Files from the bond team</b> · download, sign where needed, then upload the signed copy against the matching document below.${r.files.map(f=>`<div style="margin-top:4px">${fileChip(f)} <span class="mu">· ${esc(f.by||'')}, ${fdt(f.at)}</span></div>`).join('')}</div>`+h};
+</script>
+<script>
+/* ============ v45: CSO can ask the BU to validate a draft bond. BU approves it as final, or asks for changes (new version) ============ */
+const _pend45=pending;pending=function(b){const o=_pend45(b);if(b.status==='open'&&b.step==='placement'&&b.payment&&!draftFinal(b)){const l=draftRounds(b).at(-1);if(l&&!l.review&&l.val?.status==='asked')return [{who:'maker',text:'Validate draft v'+l.v+' · approve it, or ask for changes'}];if(l&&!l.review&&l.val?.status==='ok')return [{who:'team',text:'BU approved draft v'+l.v+' · confirm it as the final draft'}]}return o};
+const _stP45=stPlacement;stPlacement=function(b){let h=_stP45(b);if(b.step!=='placement'||b.status!=='open')return h;
+  const D=draftRounds(b),l=D.at(-1),cso=can('verify','edit');if(!l||!b.payment||draftFinal(b)||l.review)return h;
+  const asked=l.val?.status==='asked',mk=isMaker(b)||isSA();
+  if(cso&&!asked)h=h.replace('<button class="btn" data-a="drChanges">','<button class="btn" data-a="drAsk">Ask BU to validate</button><button class="btn" data-a="drChanges">');
+  if(l.val?.status==='ok')return h+`<div class="note o" style="margin-top:10px"><b>BU approved draft v${l.v}</b> (${esc(l.val.by)}, ${fdt(l.val.at)}). ${cso?'Now confirm it as the final draft above.':'Waiting for the CSO to confirm it as final.'}</div>`;
+  if(!asked)return h;
+  const box=mk?`<div class="panel" style="border-color:var(--ac)"><h2>Validate draft bond v${l.v}</h2><p class="mu" style="margin:4px 0 8px">The CSO asked you to check this draft from the insurer (${esc(l.val.by)}, ${fdt(l.val.at)}).${l.val.note?' Note: '+esc(l.val.note):''}</p><div class="acts" style="margin-bottom:8px">${fileChip(l.file)}</div>
+    ${fld('Changes needed (leave empty if the draft is fine)','<textarea id="buCm" placeholder="e.g. Beneficiary name should read ... / validity should be ..."></textarea>','','full')}
+    <div class="acts" style="margin-top:8px"><span class="sp"></span><button class="btn" data-a="drBuChg">Request changes · new version</button><button class="btn p" data-a="drBuOk">Draft is fine · approve</button></div></div>`
+    :`<div class="note o" style="margin-top:10px">With the BU for validation since ${fdt(l.val.at)}. Waiting for them to approve draft v${l.v} or ask for changes.</div>`;
+  return h+box};
+A.drAsk=()=>{const b=bond(ui.bond),l=draftRounds(b).at(-1);confirmBox('Ask BU to validate draft v'+l.v+'?','The BU gets this as a task. They can approve the draft as final, or list the changes they need. If they ask for changes, you upload the next version from the insurer.','Send to BU',note=>{l.val={status:'asked',at:now(),by:me().name,note:note||''};blog(b,'CSO asked the BU to validate draft v'+l.v+(note?': '+note:'')+'.','Draft bond');save();render();toast('Sent to the BU.')},{reason:true,reasonLabel:'Note to BU (optional)'})};
+A.drBuOk=()=>{const b=bond(ui.bond),l=draftRounds(b).at(-1),cm=val('buCm');if(cm)return toast('You wrote changes. Use "Request changes", or clear the box to approve.',1);
+  confirmBox('Approve draft v'+l.v+'?','This goes back to the CSO as a task. The CSO then confirms it as the final draft.','Approve',()=>{l.val={...l.val,status:'ok',at:now(),by:me().name};blog(b,'BU validated draft v'+l.v+' and approved it. Waiting for the CSO to confirm it as final.','Draft bond');save();render();toast('Approved. The CSO will confirm it as final.')})};
+A.drBuChg=()=>{const b=bond(ui.bond),l=draftRounds(b).at(-1),cm=val('buCm');if(!cm)return toast('Write the changes you need.',1);
+  l.review={decision:'changes',comment:'BU: '+cm,file:null,at:now(),by:me().name};l.val={...l.val,status:'changes',at:now(),by:me().name};blog(b,'BU asked for changes on draft v'+l.v+': '+cm+'.','Draft bond');save();render();toast('Sent to the CSO. They will upload the next version.')};
+</script>
+<style>
+.fold{border:1px solid var(--line);border-radius:var(--r2);margin-bottom:10px;background:var(--panel)}
+.fold>summary{cursor:pointer;padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-weight:600}
+.fold .tw{margin:0 12px 12px}
+.pj-h{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.pj-h h2{margin:0}
+.pj-g{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px;align-items:start}
+@media(max-width:900px){.pj-g{grid-template-columns:1fr}}
+</style>
+<script>
+/* v51 projects list: one-line rows */
+const _pjcss=document.createElement('style');_pjcss.textContent='.pjc{max-width:380px}.pjn{display:block;max-width:380px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}';document.head.appendChild(_pjcss);
+/* ============ v47: Projects (under Bonds): folders for bonds, extensions and amendments with shared access ============ */
+const pjKey=n=>String(n||'').trim().toLowerCase().replace(/\s+/g,' ');
+const pjStore=()=>{S.m.projects=S.m.projects||[];return S.m.projects};
+const isCso=()=>isSA()||can('verify','edit');
+function pjMember(P){const m=me();if(!m||!P)return null;if(P.createdBy&&P.createdBy===m.id&&!P.implicit)return 'edit';const em=String(m.email||'').toLowerCase();let lv=null;const up=l=>{if(l==='edit')lv='edit';else if(!lv)lv='view'};
+  (P.members||[]).forEach(p=>{if((p.uid&&p.uid===m.id)||(p.email&&em&&String(p.email).toLowerCase()===em))up(p.level)});(P.bus||[]).forEach(x=>{if(m.bu&&x.name===m.bu)up(x.level)});return lv}
+const pjExplicit=P=>isCso()?'edit':pjMember(P);
+const pjBondsAll=()=>isCso()?dbAll():S.bonds;
+const pjMatch=(x,k)=>pjKey(projName(x))===k||(x.parentId&&pjKey(projName(dbAll().find(y=>y.id===x.parentId)||{}))===k);
+const pjBonds=P=>{const k=pjKey(P.name);return pjBondsAll().filter(x=>(x.status!=='draft'||x.createdBy===me().id)&&pjMatch(x,k))};
+function pjLevel(P){const e=pjExplicit(P);if(e)return e;return pjBonds(P).length?'view':null}
+function pjList(){const st=pjStore(),keys=new Set(st.map(p=>pjKey(p.name))),imp={};
+  pjBondsAll().forEach(b=>{const n=projName(b);if(!n||b.status==='draft')return;const k=pjKey(n);if(keys.has(k)||imp[k])return;imp[k]={id:'n_'+k,name:n,implicit:true,members:[],bus:[],createdAt:b.createdAt||'',createdBy:b.createdBy||''}});
+  return [...st,...Object.values(imp)].filter(p=>pjLevel(p)).sort((a,c)=>a.name.localeCompare(c.name))}
+const pjFind=id=>pjList().find(p=>p.id===id);
+function pjEnsure(P){if(!P.implicit)return P;const n={id:uid('pj'),name:P.name,code:'',desc:'',beneficiary:'',createdAt:now(),createdBy:me().id,members:[],bus:[]};pjStore().push(n);ui.pjId=n.id;return n}
+/* people added to a project see its bonds; full edit works like the requestor */
+const _buOk47=buOk;buOk=function(b,u){if(b&&b.status!=='draft'&&(!u||u===me())){const nm=projName(b)||projName(dbAll().find(y=>y.id===b.parentId)||{}),P=nm?pjStore().find(p=>pjKey(p.name)===pjKey(nm)):null;if(P&&pjMember(P))return true}return _buOk47(b,u)};
+const _isMaker47=isMaker;isMaker=function(b){if(b&&b.status!=='draft'){const nm=projName(b)||projName(dbAll().find(y=>y.id===b.parentId)||{}),P=nm?pjStore().find(p=>pjKey(p.name)===pjKey(nm)):null;if(P&&pjMember(P)==='edit')return true}return _isMaker47(b)};
+/* menu */
+['newBond','newExt','newAmd'];NAV[1][1].splice(3,0,['projects','Projects']);NAV_IC.projects='▣';RPERM.projects=['register','view'];
+Object.assign(TITLES,{projects:['Projects','Every project with its bonds, extensions, amendments, people and documents']});
+const _go47=go;go=function(r,x){if(r==='projects'&&!(x&&x.keep))ui.pjId=null;_go47(r,x)};
+/* ---------- list ---------- */
+const pjLive=L=>L.filter(validB);
+const pjShort=P=>String(P.short||'').trim()||P.name;
+const pjCanEdit=P=>isCso()||pjLevel(P)==='edit'||(P.createdBy&&P.createdBy===me().id);
+function pjIndex(){const L=pjList(),canNew=can('request','create')||isCso();
+  const info=new Map(L.map(p=>{const bs=pjBonds(p),roots=bs.filter(b=>b.kind==='new'),lv=pjLive(roots);return [p.id,{roots,lv,soon:lv.filter(b=>b.expiry&&dBetween(TODAY,b.expiry)<=90).length}]}));
+  const I=p=>info.get(p.id);
+  const T=TBL.pjix={key:'pjix',cols:[{k:'s',l:'Project',g:p=>pjShort(p)},{k:'c',l:'Code',g:p=>p.code||''},{k:'be',l:'Beneficiary',g:p=>p.beneficiary||''},{k:'b',l:'Bonds',g:p=>I(p).roots.length,n:1},{k:'l',l:'Live',g:p=>I(p).lv.length,n:1},{k:'v',l:'Live value',g:p=>I(p).lv.reduce((a,b)=>a+(+b.amount||0),0),n:1},{k:'x',l:'Expiring in 90 days',g:p=>I(p).soon,n:1},{k:'sh',l:'Shared with',g:p=>(p.members||[]).length+' people · '+(p.bus||[]).length+' dept'},{k:'ac',l:'Your access',g:p=>pjLevel(p)==='edit'?'Full edit':'View'},{k:'src',l:'Source',g:p=>p.implicit?'From bonds':'Created'}],rows:()=>L};
+  const f=ftRows(T);
+  const rows=f.map(p=>{const i=I(p),lvl=pjLevel(p);
+    return `<tr><td class="pjc"><button class="btn link pjn" data-a="pjOpen" data-id="${esc(p.id)}" title="${esc(p.name)}"><b>${esc(pjShort(p))}</b></button></td><td>${esc(p.code||'')}</td><td>${esc(p.beneficiary||'')}</td><td class="n">${i.roots.length}</td><td class="n">${i.lv.length}</td><td class="n">${totTxt(i.lv)}</td><td class="n">${i.soon||'—'}</td><td class="w">${(p.members||[]).length} people · ${(p.bus||[]).length} dept</td><td>${pill(lvl==='edit'?'Full edit':'View',lvl==='edit'?'ok':'gr')}</td><td>${p.implicit?pill('from bonds','gr'):pill('created','in')}</td><td class="stk">${pjCanEdit(p)?`<button class="btn sm" data-a="pjShortEdit" data-id="${esc(p.id)}" title="Edit short name">✎ Edit</button>`:''}</td></tr>`}).join('');
+  return `<div class="panel"><div class="row c" style="justify-content:space-between;gap:10px"><div><h2>Projects</h2><span class="mu">${isCso()?'You see every project.':'You see projects shared with you or your department, and projects your bonds belong to.'} Bonds with the same project name are grouped here automatically. Use ✎ Edit to give a project a short name.</span></div><div class="acts">${pjCanNew()?'<button class="btn p" data-a="pjNewPick">＋ New</button>':''}${canNew?'<button class="btn" data-a="pjNewModal">＋ New project</button>':''}</div></div><div style="margin-top:12px">${ftBar(T,'Search project, code, beneficiary…')}</div></div>
+  <div class="mu" style="margin-bottom:6px">Showing ${f.length} of ${L.length} projects</div>
+  <div class="tw"><table><thead><tr>${ftHead(T)}<th class="stk"></th></tr></thead><tbody>${rows||`<tr><td colspan="40" class="empty">${L.length?'No project matches these filters.':'No projects yet. Create one with “New project”.'}</td></tr>`}</tbody></table></div>`}
+A.pjShortEdit=el=>{const P=pjFind(el.dataset.id);if(!P)return;ui.modal={kind:'pjshort',id:P.id};modal(`<h2>Short name</h2><p class="lead">Shown in the project list and on the project page. The full project name stays as it is, because it links the bonds.</p><div class="grid">${fld('Full project name','<input readonly value="'+esc(P.name)+'">','','full')}${fld('Short name','<input id="pjShortIn" maxlength="60" value="'+esc(P.short||'')+'" placeholder="e.g. BPCL Mumbai">','Leave empty to show the full name.','full')}</div><div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="pjShortGo">Save</button></div>`)};
+A.pjShortGo=()=>{let P=pjFind(ui.modal?.id);if(!P)return closeModal();const keep=ui.pjId;P=pjEnsure(P);ui.pjId=keep;const v=(val('pjShortIn')||'').trim(),old=P.short||'';P.short=v;audit('Project','Short name changed',P.name,(old||'—')+' → '+(v||'—'));closeModal();save();render();toast(v?'Short name saved.':'Short name cleared.')};
+CH.pjQ=el=>{ui.pjQ=el.value;const pos=el.selectionStart;render();const n=$('#pjQ');if(n){n.focus();n.setSelectionRange(pos,pos)}};
+A.pjOpen=el=>{ui.pjId=el.dataset.id;ui.pjTab='overview';render();scrollTo(0,0)};
+A.pjBack=()=>{ui.pjId=null;render()};
+A.pjTab=el=>{ui.pjTab=el.dataset.k;render()};
+A.pjAll=el=>{ui.pjAllF=!ui.pjAllF;render()};
+/* ---------- create / edit ---------- */
+A.pjNewModal=()=>{ui.modal={kind:'pjnew'};modal(`<h2>New project</h2><p class="lead">Bonds, extensions and amendments raised inside the project are grouped here. You can share it with people and departments.</p>
+  <div class="grid">${fld('Project name <span class="req">*</span>','<input id="pjName" placeholder="e.g. BPCL Mumbai refinery expansion">')}${fld('Project code','<input id="pjCode">')}${fld('Beneficiary / customer','<input id="pjBen">')}${fld('Department access','<select id="pjBuLv"><option value="edit">Full edit</option><option value="view">View</option></select>')}${fld('Description','<textarea id="pjDesc"></textarea>','','full')}</div>
+  ${fld('Share with departments',`<div class="fl" style="max-height:180px" id="pjBus">${MA('bus').map(x=>`<label class="ck"><input type="checkbox" value="${esc(x.name)}"> ${esc(x.name)}</label>`).join('')||'<span class="mu">No departments in Masters.</span>'}</div>`,'You can also add people later in the Access tab.','full')}
+  <div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="pjCreate">Create project</button></div>`,true)};
+A.pjCreate=()=>{const n=(val('pjName')||'').trim();if(!n)return toast('Give the project a name.',1);if(pjList().some(p=>pjKey(p.name)===pjKey(n)))return toast('A project with this name already exists.',1);
+  const lv=val('pjBuLv')||'edit',bus=$$('#pjBus input:checked').map(x=>({name:x.value,level:lv,at:now(),by:me().name}));
+  const P={id:uid('pj'),name:n,code:(val('pjCode')||'').trim(),beneficiary:(val('pjBen')||'').trim(),desc:(val('pjDesc')||'').trim(),createdAt:now(),createdBy:me().id,members:[],bus};
+  pjStore().push(P);audit('Project','Project created',n,bus.length?'Shared with '+bus.map(x=>x.name).join(', '):'');closeModal();ui.pjId=P.id;ui.pjTab='overview';save();render();toast('Project created.')};
+A.pjEdit=()=>{const P=pjFind(ui.pjId);if(!P)return;ui.modal={kind:'pjedit'};modal(`<h2>Project details</h2><div class="grid">${fld('Project name','<input id="pjName" readonly value="'+esc(P.name)+'">','The name links the bonds, so it cannot be changed here.')}${fld('Short name',`<input id="pjShort" maxlength="60" value="${esc(P.short||'')}">`)}${fld('Project code',`<input id="pjCode" value="${esc(P.code||'')}">`)}${fld('Beneficiary / customer',`<input id="pjBen" value="${esc(P.beneficiary||'')}">`)}${fld('Description',`<textarea id="pjDesc">${esc(P.desc||'')}</textarea>`,'','full')}</div><div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="pjEditGo">Save</button></div>`)};
+A.pjEditGo=()=>{let P=pjFind(ui.pjId);if(!P)return;P=pjEnsure(P);P.short=(val('pjShort')||'').trim();P.code=(val('pjCode')||'').trim();P.beneficiary=(val('pjBen')||'').trim();P.desc=(val('pjDesc')||'').trim();audit('Project','Project details changed',P.name,'');closeModal();save();render()};
+A.pjNewBond=()=>{const P=pjFind(ui.pjId);if(!P)return;autoSaveDraft();const b=blankBond('new');b.projectLink=P.name;b.project=P.name;if(P.beneficiary&&!b.beneficiary)b.beneficiary=P.beneficiary;ui.draft=b;XF.clear();ui.ocr='';go('request',{keep:1})};
+const pjCanNew=()=>can('request','create')||can('lifecycle','create')||isCso();
+const pjLiveOf=P=>P?pjBonds(P).filter(b=>b.kind==='new'&&b.status==='issued'):[];
+function pjBondSel(P){const live=pjLiveOf(P);return live.length?`<select id="pjBond">${opts(live.map(b=>[b.id,(b.ref||'')+(b.final?.bondNo?' · '+b.final.bondNo:'')+' · '+(b.type||'')+' · '+money(b.amount,curOf(b))+(b.expiry?' · exp '+fd(b.expiry):'')]),'','Pick a bond')}</select>`:'<div class="mu">'+(P?'No live (issued) bonds in this project yet.':'Pick a project first.')+'</div>'}
+A.pjNewPick=()=>{const P=ui.pjId?pjFind(ui.pjId):null,L=pjList(),canB=can('request','create')||isCso(),canR=can('lifecycle','create')||isCso();ui.modal={kind:'pjpick'};
+  const kinds=[...(canB?[['new','New bond']]:[]),...(canR?[['ext','Extension'],['amd','Amendment']]:[])];
+  modal(`<h2>New request${P?' in '+esc(pjShort(P)):''}</h2><p class="lead">What do you want to raise?</p>
+  <div class="grid">${P?'':fld('Project <span class="req">*</span>',`<select id="pjProj" data-ch="pjProj">${opts(L.map(x=>[x.id,pjShort(x)+(x.short?' · '+x.name:'')]),'','Pick a project')}</select>`)}
+  ${fld('Request type <span class="req">*</span>',`<select id="pjKind" data-ch="pjKind">${opts(kinds,kinds[0]?.[0])}</select>`)}
+  <div class="fld ${kinds[0]?.[0]==='new'?'hide':''}" id="pjBondF"><label>Live bond to change <span class="req">*</span></label><div id="pjBondW">${pjBondSel(P)}</div></div></div>
+  <div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="pjNewGo">Continue</button></div>`)};
+CH.pjKind=el=>{const f=$('#pjBondF');if(f)f.classList.toggle('hide',el.value==='new')};
+CH.pjProj=el=>{const w=$('#pjBondW');if(w)w.innerHTML=pjBondSel(el.value?pjFind(el.value):null)};
+A.pjNewGo=()=>{const k=val('pjKind')||'new',pid=ui.pjId||val('pjProj');if(!pid)return toast('Pick a project.',1);
+  if(k==='new'){closeModal();const keep=ui.pjId;ui.pjId=pid;const P=pjFind(pid);if(!P){ui.pjId=keep;return}return A.pjNewBond()}
+  const id=val('pjBond');if(!id)return toast('Pick the live bond to '+(k==='ext'?'extend':'amend')+'.',1);closeModal();A.raiseFor({dataset:{id,k}})};
+/* ---------- project page ---------- */
+function pjDetail(){const P=pjFind(ui.pjId);if(!P){ui.pjId=null;return pjIndex()}
+  ui._dq=[];const t=ui.pjTab||'overview',bs=pjBonds(P),roots=bs.filter(b=>b.kind==='new'),lv=pjLive(roots),mng=isCso()||(P.createdBy===me().id&&!P.implicit);
+  const tabs=[['overview','Overview'],['bonds','Bonds ('+bs.length+')'],['docs','Documents'],['access','Access']];
+  const head=`<div class="panel"><div class="pj-h"><div><button class="btn sm" data-a="pjBack">← All projects</button><h2 style="margin-top:8px">${esc(pjShort(P))}${P.code?` <span class="mu">${esc(P.code)}</span>`:''}</h2><div class="mu" style="margin-top:2px"><b>Project name:</b> ${esc(P.name)}</div><span class="mu">${esc(P.beneficiary||'')}${P.beneficiary&&P.desc?' · ':''}${esc(P.desc||'')}</span></div><div class="acts">${pjCanEdit(P)?`<button class="btn" data-a="pjShortEdit" data-id="${esc(P.id)}">✎ Short name</button>`:''}${(mng||pjLevel(P)==='edit')&&!P.implicit?'<button class="btn" data-a="pjEdit">Edit details</button>':''}${pjCanNew()?'<button class="btn p" data-a="pjNewPick">＋ New</button>':''}</div></div>
+  <div class="dtabs chips" role="tablist" style="margin-top:12px">${tabs.map(([k,l])=>`<button class="chip ${k===t?'on':''}" role="tab" aria-selected="${k===t}" data-a="pjTab" data-k="${k}">${l}</button>`).join('')}</div></div>`;
+  return head+(t==='bonds'?pjBondsTab(P,bs):t==='docs'?pjDocsTab(P,bs):t==='access'?pjAccessTab(P,mng):pjOverview(P,bs))}
+function pjOverview(P,bs){const roots=bs.filter(b=>b.kind==='new'),lv=pjLive(roots),op=roots.filter(b=>b.status==='open'),soon=lv.filter(b=>b.expiry&&dBetween(TODAY,b.expiry)<=90).sort((a,c)=>String(a.expiry).localeCompare(String(c.expiry))),lap=roots.filter(b=>lapsedB(b)||b.status==='released'),canc=roots.filter(b=>['cancelled','withdrawn','rejected'].includes(b.status)),prem=roots.filter(b=>premOf(b)>0),pt=prem.reduce((a,b)=>a+premOf(b),0);
+  const tile=(l,n,s2,rows)=>`<button class="stat" type="button" data-a="drillQ" data-i="${dq(P.name+' · '+l,rows)}" title="Click to see these bonds"><small>${l}</small><strong>${n}</strong><span class="s2">${s2}</span></button>`;
+  const grp=(k)=>{const g={};roots.forEach(b=>{const n=k(b)||'—';(g[n]=g[n]||[]).push(b)});return Object.entries(g).sort((a,c)=>c[1].length-a[1].length)};
+  const gtab=(title,k)=>`<div class="panel"><h2>${title}</h2><div style="margin-top:8px">${tbl('<th></th><th class="n">Bonds</th><th class="n">Live</th><th class="n">Live value</th>',grp(k).map(([n,l])=>`<tr><td>${esc(n)}</td><td class="n">${dqBtn(l.length,P.name+' · '+n,l)}</td><td class="n">${pjLive(l).length?dqBtn(pjLive(l).length,P.name+' · '+n+' · live',pjLive(l)):0}</td><td class="n">${totTxt(pjLive(l))}</td></tr>`).join(''),'Nothing yet.')}</div></div>`;
+  const tot=roots.length||1,bar=(l,n,c)=>`<div class="wd-bar"><span class="ell">${l}</span>${rbar(n,tot,c)}<b>${n}</b></div>`;
+  return `<div class="stats" style="margin-top:12px">${tile('Bonds',roots.length,bs.length-roots.length+' extension / amendment request(s)',roots)}${tile('Live bonds',lv.length,totTxt(lv)+' valid',lv)}${tile('In progress',op.length,'Not issued yet',op)}${tile('Expiring in 90 days',soon.length,soon[0]?'Next: '+fd(soon[0].expiry):'None soon',soon)}${tile('Premium paid',pt?totTxt(prem.map(b=>({...b,amount:premOf(b)}))):'—',prem.length+' bond(s)',prem)}</div>
+  <div class="pj-g"><div><div class="panel"><h2>Where the bonds stand</h2><div style="margin-top:8px">${bar('Live',lv.length,'')}${bar('In progress',op.length,'wa')}${bar('Expired / returned',lap.length,'')}${bar('Cancelled / dropped',canc.length,'er')}</div></div>${gtab('By bond type',b=>b.type)}</div><div>${gtab('By insurer',b=>b.insurer)}<div class="panel"><h2>Next expiries</h2><div style="margin-top:8px">${tbl('<th>Bond request</th><th>Type</th><th class="n">Amount</th><th>Expiry</th>',soon.slice(0,8).map(b=>`<tr><td><button class="btn link" data-a="openBond" data-id="${b.id}">${esc(b.ref)}</button></td><td>${esc(b.type||'')}</td><td class="n">${money(b.amount,curOf(b))}</td><td>${fd(b.expiry)} ${pill(dBetween(TODAY,b.expiry)+' days',dBetween(TODAY,b.expiry)<=15?'er':'wa')}</td></tr>`).join(''),'Nothing expires in the next 90 days.')}</div></div></div></div>`}
+function pjBondsTab(P,bs){const lvl=pjLevel(P),canR=can('lifecycle','create')||isCso();
+  const rows=bs.slice().sort((a,c)=>String(c.createdAt||'').localeCompare(String(a.createdAt||''))).map(b=>{const live=b.kind==='new'&&b.status==='issued';return `<tr><td class="w"><button class="btn link" data-a="openBond" data-id="${b.id}">${esc(b.ref||'Draft')}</button></td><td>${esc(KIND_L[b.kind]||'')}${b.parentId?' <span class="mu">of '+esc((dbAll().find(y=>y.id===b.parentId)||{}).ref||'')+'</span>':''}</td><td>${esc(b.final?.bondNo||'')}</td><td>${esc(b.type||'')}</td><td>${esc(b.insurer||'')}</td><td>${statusPill(b)}</td><td class="w"><button class="btn link" data-a="verOpen" data-id="${b.id}">${esc(verOf(b))}</button></td><td class="n w">${money(b.amount,curOf(b))}</td><td class="w">${fd(b.expiry)}</td><td>${live&&lvl==='edit'&&canR?`<div class="acts"><button class="btn sm p" data-a="raiseFor" data-id="${b.id}" data-k="ext">Raise extension</button><button class="btn sm" data-a="raiseFor" data-id="${b.id}" data-k="amd">Raise amendment</button></div>`:''}</td></tr>`}).join('');
+  return `<div class="panel" style="margin-top:12px"><div class="row c" style="justify-content:space-between"><div><h2>Bonds in this project</h2><span class="mu">New bonds, extensions and amendments. Raise an extension or amendment straight from a live bond.</span></div>${pjCanNew()?'<button class="btn p" data-a="pjNewPick">＋ New</button>':''}</div><div style="margin-top:10px">${tbl('<th>Request</th><th>Kind</th><th>Bond number</th><th>Bond type</th><th>Insurer</th><th>Status</th><th>Version</th><th class="n">Amount</th><th>Expiry</th><th></th>',rows,'No bonds in this project yet.')}</div></div>`}
+function pjFinalDocs(b){const out=[];docsOf(b).forEach(x=>{if(x.stage==='4 · Draft bond')return;if(['4 · PI','5 · Issued','6 · Closure','Return','Invocation'].includes(x.stage)&&x.f)out.push(x)});const fr=draftRounds(b).find(r=>r.review?.decision==='final');if(fr&&fr.file)out.push({b,stage:'4 · Draft bond',doc:'Final draft v'+fr.v,f:fr.file});return out.sort((a,c)=>a.stage.localeCompare(c.stage))}
+function pjDocsTab(P,bs){const all=!!ui.pjAllF,docsFor=b=>all?docsOf(b).filter(x=>x.f):pjFinalDocs(b),roots=bs.filter(b=>b.kind==='new'||!bs.some(y=>y.id===b.parentId));
+  const fold=r=>{const kids=bs.filter(y=>y.parentId===r.id),L=[...docsFor(r).map(x=>({...x,own:1})),...kids.flatMap(k=>docsFor(k).map(x=>({...x,doc:(KIND_L[k.kind]||'Change')+' '+(k.ref||'')+' · '+x.doc})))];
+    return `<details class="fold" ${L.length?'open':''}><summary><span>📁 ${esc(r.ref||'Draft')}</span><span class="mu">${esc(r.final?.bondNo||'not issued yet')} · ${esc(r.type||'')}</span>${statusPill(r)}<span class="mu" style="margin-left:auto">${L.length} file(s)</span></summary>${tbl('<th>Step</th><th>Document</th><th>Uploaded</th><th>By</th><th>File</th>',L.map(x=>`<tr><td class="w">${esc(x.stage)}</td><td>${esc(x.doc)}</td><td class="w">${x.f?.at?fdt(x.f.at):'—'}</td><td>${esc(x.f?.by||'')}</td><td>${fileChip(x.f)}</td></tr>`).join(''),all?'No files yet.':'No final files yet. They appear here once the bond is issued.')}</details>`};
+  return `<div class="panel" style="margin-top:12px"><div class="row c" style="justify-content:space-between"><div><h2>Documents by bond</h2><span class="mu">One folder per bond. Each folder holds the final files: final draft, issued bond, endorsements, PI and tax invoice. ${FILE_NOTE}</span></div><button class="btn" data-a="pjAll">${all?'Show final files only':'Show every file'}</button></div></div>${roots.map(fold).join('')||'<div class="panel"><p class="mu">No bonds in this project yet.</p></div>'}`}
+function pjAccessTab(P,mng){const cr=P.createdBy&&U(P.createdBy);
+  return `<div class="panel" style="margin-top:12px"><div class="row c" style="justify-content:space-between"><div><h2>Who can see this project</h2><span class="mu">CSO team sees every project. People and departments added here see the project and all its bonds, whatever their own department. <b>View</b> = read only. <b>Full edit</b> = can raise bonds, extensions and amendments, upload and reply.</span></div>${mng?'<button class="btn p" data-a="pjMng">＋ Add people / departments</button>':''}</div>
+  <h3 style="margin-top:12px">People</h3>${tbl('<th>Person</th><th>Access</th><th></th>',(cr?`<tr><td><b>${esc(cr.name)}</b> <span class="mu">${esc(cr.email||'')}</span></td><td>${pill('Owner · full edit','ok')}</td><td></td></tr>`:'')+(P.members||[]).map((p,i)=>`<tr><td><b>${esc(pocName(p))}</b>${p.uid?`<div class="mu">${esc(U(p.uid)?.email||'')}</div>`:'<div class="mu">Not a user yet: gets access when they sign in with this email</div>'}</td><td>${mng?`<select data-ch="pjLvl" data-w="m" data-i="${i}">${opts([['view','View'],['edit','Full edit']],p.level)}</select>`:pill(p.level==='edit'?'Full edit':'View','gr')}</td><td>${mng?`<button class="btn sm d" data-a="pjDel" data-w="m" data-i="${i}">Remove</button>`:''}</td></tr>`).join(''),'No people added yet.')}
+  <h3 style="margin-top:12px">Departments</h3>${tbl('<th>Department</th><th>Access</th><th></th>',(P.bus||[]).map((x,i)=>`<tr><td><b>${esc(x.name)}</b></td><td>${mng?`<select data-ch="pjLvl" data-w="b" data-i="${i}">${opts([['view','View'],['edit','Full edit']],x.level)}</select>`:pill(x.level==='edit'?'Full edit':'View','gr')}</td><td>${mng?`<button class="btn sm d" data-a="pjDel" data-w="b" data-i="${i}">Remove</button>`:''}</td></tr>`).join(''),'No department added yet.')}</div>`}
+A.pjMng=()=>{let P=pjFind(ui.pjId);if(!P)return;const have=new Set((P.members||[]).map(p=>p.uid).filter(Boolean)),haveB=new Set((P.bus||[]).map(x=>x.name)),users=ACCESS.users.filter(u=>u.active!==false&&u.id!==P.createdBy&&!have.has(u.id));ui.modal={kind:'pjmng'};
+  modal(`<h2>Share project</h2><p class="lead">Add people by name or email, or a whole department.</p><div class="grid">${fld('Access for everyone added below','<select id="pjLv"><option value="view">View</option><option value="edit">Full edit</option></select>')}${fld('Add by email (comma separated)','<input id="pjMail" placeholder="asha@zetwerk.com, ravi@zetwerk.com">')}</div>
+  ${fld('Pick users',`<input id="pjUq" data-in="pjUq" placeholder="Search name or email" style="margin-bottom:6px"><div class="fl" id="pjUsers" style="max-height:200px">${users.map(u=>`<label class="ck"><input type="checkbox" value="${u.id}"> <b>${esc(u.name)}</b> <span class="mu">${esc(u.email||'')} · ${esc(roleOf(u).name)}${u.bu?' · '+esc(u.bu):''}</span></label>`).join('')||'<span class="mu">Everyone is already added.</span>'}</div>`,'','full')}
+  ${fld('Departments',`<div class="fl" id="pjBus2" style="max-height:140px">${MA('bus').filter(x=>!haveB.has(x.name)).map(x=>`<label class="ck"><input type="checkbox" value="${esc(x.name)}"> ${esc(x.name)}</label>`).join('')||'<span class="mu">All departments are added.</span>'}</div>`,'','full')}
+  <div class="foot"><button class="btn" data-a="closeModal">Cancel</button><button class="btn p" data-a="pjAddGo">Add</button></div>`,true)};
+CH.pjUq=el=>{const q=el.value.toLowerCase();$$('#pjUsers label').forEach(l=>l.style.display=l.textContent.toLowerCase().includes(q)?'':'none')};
+A.pjAddGo=()=>{let P=pjFind(ui.pjId);if(!P)return;const lv=val('pjLv')||'view',ids=$$('#pjUsers input:checked').map(x=>x.value),bus=$$('#pjBus2 input:checked').map(x=>x.value),mails=String(val('pjMail')||'').split(/[,;\s]+/).map(x=>x.trim().toLowerCase()).filter(Boolean),bad=mails.filter(x=>!/^\S+@\S+\.\S+$/.test(x));
+  if(bad.length)return toast('Check this email: '+bad[0],1);if(!ids.length&&!bus.length&&!mails.length)return toast('Pick a person, an email or a department first.',1);
+  P=pjEnsure(P);P.members=P.members||[];P.bus=P.bus||[];const add=[];
+  const push=o=>{if(o.uid&&(o.uid===P.createdBy||P.members.some(p=>p.uid===o.uid)))return;if(o.email&&P.members.some(p=>p.email===o.email||(p.uid&&String(U(p.uid)?.email||'').toLowerCase()===o.email)))return;P.members.push({...o,level:lv,at:now(),by:me().name});add.push(o.uid?U(o.uid)?.name:o.email)};
+  ids.forEach(id=>push({uid:id}));mails.forEach(m=>{const u=ACCESS.users.find(x=>String(x.email||'').toLowerCase()===m);push(u?{uid:u.id}:{email:m})});
+  bus.forEach(n=>{if(!P.bus.some(x=>x.name===n)){P.bus.push({name:n,level:lv,at:now(),by:me().name});add.push(n+' (dept)')}});
+  if(!add.length)return toast('Everyone you picked already has access.',1);audit('Project','Access added',P.name,add.join(', ')+' · '+(lv==='edit'?'full edit':'view'));closeModal();save();render();toast('Shared with '+add.length+'.')};
+CH.pjLvl=el=>{const P=pjFind(ui.pjId);if(!P)return;const L=el.dataset.w==='b'?P.bus:P.members,x=L[+el.dataset.i];if(!x)return;x.level=el.value;audit('Project','Access changed',P.name,(x.name||pocName(x))+' → '+(x.level==='edit'?'full edit':'view'));save();render()};
+A.pjDel=el=>{const P=pjFind(ui.pjId);if(!P)return;const L=el.dataset.w==='b'?P.bus:P.members,x=L[+el.dataset.i];if(!x)return;L.splice(+el.dataset.i,1);audit('Project','Access removed',P.name,x.name||pocName(x));save();render()};
+VIEWS.projects=()=>ui.pjId?pjDetail():pjIndex();
 </script>
 <script>boot();</script>
 
